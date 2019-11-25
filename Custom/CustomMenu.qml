@@ -1,35 +1,27 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
-Button{
-    width: 100
-    height: 50
-    text:qsTr('定制menu')
-    onClicked: {
-
-        menu.open()
-    }
 
 Menu {
     id: menu
-    Action { text: qsTr("Tool Bar"); checkable: true }
-    Action { text: qsTr("Side Bar"); checkable: true; checked: true }
-    Action { text: qsTr("Status Bar"); checkable: true; checked: true }
+   // Action { text: qsTr("Tool Bar"); checkable: true }
+   // Action { text: qsTr("Side Bar"); checkable: true; checked: true }
+   // Action { text: qsTr("Status Bar"); checkable: true; checked: true }
+   //
+   // MenuSeparator {
+   //     contentItem: Rectangle {
+   //         implicitWidth: 200
+   //         implicitHeight: 1
+   //         color: "#21be2b"
+   //     }
+   // }
 
-    MenuSeparator {
-        contentItem: Rectangle {
-            implicitWidth: 200
-            implicitHeight: 1
-            color: "#21be2b"
-        }
-    }
 
+   // Menu {
+   //     title: qsTr("Advanced")
+   //     Action{text: qsTr('hello')}
 
-    Menu {
-        title: qsTr("Advanced")
-        Action{text: qsTr('hello')}
-
-        // ...
-    }
+   //     // ...
+   // }
 
     topPadding: 2
     bottomPadding: 2
@@ -123,5 +115,4 @@ Menu {
         border.color: "#21be2b"
         radius:2
     }
-}
 }

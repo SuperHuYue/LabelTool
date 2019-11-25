@@ -9,6 +9,8 @@ import QtQuick.Window 2.13
  vBarenable:是否显示垂直轴拖动框
  hBarenable:是否显示水平轴拖动框
  listviewdata:显示到界面上的数据 list类型，目前只测试了text类型
+ rightclickmenu中的条目需要
+ 注意：动态出现scrolbar尚有bug---line28有解释
 */
 Rectangle{
     id:controlBackground
@@ -22,12 +24,51 @@ Rectangle{
     property var vBarenable: false
     property int vbarwidth: 10
     property int hbarheight: 10
+    ////////////////////////////////////////////////////////////////////////////////
+    //目前这种动态出现scrobar的方式尚且还有bug，会在鼠标处于bar中心时bar不停的闪动
+    //readonly property var finalvBarenable: (vBarenable && background_area.containsMouse)
+    //readonly property var finalhBarenable: (hBarenable && background_area.containsMouse)
+    ////////////////////////////////////////////////////////////////////////////////
+
+    readonly property var finalvBarenable: vBarenable
+    readonly property var finalhBarenable: hBarenable
+    //warning :解释方式为顺序从上往下的方式，如果controlBackgroundArea放置在最后，那么它将会覆盖整个空间成为最上层的mousearea，而放在这里则是最底层的mousearea,放置在顶层则会让后面的mousearea消息的
+    //propaganda出现问题，导致出错！！！！！
+    MouseArea{
+        id:controlBackgroundArea
+        anchors.fill: controlBackground
+        hoverEnabled: true
+        onClicked: {
+            console.log('control clicked....')
+            //mouse.accepted = false
+        }
+    }
+    CustomMenu{
+        id:rightclickmenu
+        Action { text: qsTr("Tool Bar"); checkable: true; onTriggered: {console.log('add some method....')}}
+        Action { text: qsTr("Side Bar"); checkable: true; checked: true }
+        Action { text: qsTr("Status Bar"); checkable: true; checked: true }
+
+        MenuSeparator {
+            contentItem: Rectangle {
+                implicitWidth: 200
+                implicitHeight: 1
+                color: "#21be2b"
+            }
+        }
+        Menu {
+            title: qsTr("Advanced")
+            Action{text: qsTr('hello')}
+            // ...
+        }
+    }
+
     Rectangle{
          id:listBackground
          anchors.left: controlBackground.left
          anchors.top: controlBackground.top
-         width: vBarenable?(controlBackground.width - vbarwidth):controlBackground.width
-         height: hBarenable?(controlBackground.height - hbarheight):controlBackground.height
+         width: finalvBarenable?(controlBackground.width - vbarwidth):controlBackground.width
+         height: finalhBarenable?(controlBackground.height - hbarheight):controlBackground.height
          color: 'yellow'
          clip: true
          TextMetrics{
@@ -41,6 +82,7 @@ Rectangle{
 //             anchors.left: listBackground.left
              width:max_text_length
              height: contentHeight
+             focus: true
              x: -hBar.position * width
              y: -vBar.position * contentHeight
              delegate:Rectangle{
@@ -68,11 +110,12 @@ Rectangle{
                  MouseArea{
                      id:warpper_area
                      anchors.fill: parent
+                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                      propagateComposedEvents: true
-
                      onClicked: {
                          root.currentIndex = index
                          console.log('curidx: ',root.currentIndex, 'total idx', root.count)
+                         mouse.accepted = false
                      }
                  }
              }
@@ -81,32 +124,48 @@ Rectangle{
          MouseArea{
              id:background_area
              anchors.fill:listBackground
+             acceptedButtons: Qt.LeftButton | Qt.RightButton   //*****MouseArea接受button类型
              property bool xSensArea: false
              property bool ySensArea: false
              property bool xStretch: false
              property bool yStretch: false
              property var pos:[]
-             propagateComposedEvents: true
+             propagateComposedEvents: true     //****消息向下传递
              hoverEnabled: true
 
              onPressed: {
-                 if(xSensArea == true){
-                     xStretch = true
-                     pos = [mouseX,mouseY]
+                 if(mouse.button === Qt.LeftButton) {
+                     console.log('left button clicked...')
+                     if(xSensArea == true){
+                         xStretch = true
+                         pos = [mouseX,mouseY]
+                     }
+                     if(ySensArea == true){
+                         yStretch = true
+                         pos = [mouseX,mouseY]
+                     }
                  }
-                 if(ySensArea == true){
-                     yStretch = true
-                     pos = [mouseX,mouseY]
+                 if(mouse.button === Qt.RightButton){
+                     console.log('right button clicked....')
+                     rightclickmenu.x = mouseX + parent.x
+                     rightclickmenu.y = mouseY + parent.y
+                     rightclickmenu.popup()
                  }
+                 if(mouse.button === Qt.MidButton){
+                     console.log('middle button clicked...')
+                 }
+
              }
              onReleased: {
                  xStretch = false
                  yStretch = false
              }
 
+
+
              onPositionChanged: { // mouse给入的是相对当前mouseare的坐标
-                 var xCursorChange = mouseX > (listBackground.width - 5) && mouseX < (listBackground.width + 5);
-                 var yCursorChange = mouseY > (listBackground.height - 5) && mouseY < (listBackground.height + 5)
+                 var xCursorChange = mouseX > (listBackground.width - 5) && mouseX < (listBackground.width);
+                 var yCursorChange = mouseY > (listBackground.height - 5) && mouseY < (listBackground.height)
                  if(xCursorChange === true || yCursorChange === true)
                  {
                      if(xCursorChange === true && yCursorChange === true){
@@ -147,6 +206,12 @@ Rectangle{
              }
          }
 
+ //        Keys.onPressed: {
+ //            if(event.key === Qt.Key_Left)
+ //            {
+ //                console.log('key pressed....')
+ //            }
+ //        }
     }
 
     ScrollBar{
@@ -154,7 +219,7 @@ Rectangle{
         z:1
         active: pressed
         orientation: Qt.Vertical
-        visible: vBarenable?true:false
+        visible: finalvBarenable?true:false
         size:listBackground.height / root.contentHeight
         anchors.top: controlBackground.top
         anchors.right: controlBackground.right
@@ -176,11 +241,11 @@ Rectangle{
         z:1
         active: pressed
         orientation: Qt.Horizontal
-        visible: hBarenable?true:false
+        visible: finalhBarenable?true:false
         size:listBackground.width/ root.width
         anchors.bottom: controlBackground.bottom
         anchors.left: controlBackground.left
-        width: vBarenable?(controlBackground.width - vBar.width):controlBackground.width
+        width: finalvBarenable?(controlBackground.width - vBar.width):controlBackground.width
         height:hbarheight
         background:Rectangle{
             color: 'green'

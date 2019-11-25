@@ -20,6 +20,25 @@ ApplicationWindow{
         xMoveable: true
         yMoveable:true
         listviewdata:lotsofdata()
+
+//        rightclickmenu: {
+//            Action { text: qsTr("Tool Bar"); checkable: true }
+//            Action { text: qsTr("Side Bar"); checkable: true; checked: true }
+//            Action { text: qsTr("Status Bar"); checkable: true; checked: true }
+//
+//            MenuSeparator {
+//                contentItem: Rectangle {
+//                implicitWidth: 200
+//                implicitHeight: 1
+//                color: "#21be2b"
+//                }
+//            }
+//            Menu {
+//                title: qsTr("Advanced")
+//                Action{text: qsTr('hello')}
+//                // ...
+//            }
+//        }
     }
 
 function lotsofdata(){
