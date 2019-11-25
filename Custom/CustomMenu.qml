@@ -19,8 +19,7 @@ Menu {
    // Menu {
    //     title: qsTr("Advanced")
    //     Action{text: qsTr('hello')}
-
-   //     // ...
+   //
    // }
 
     topPadding: 2
