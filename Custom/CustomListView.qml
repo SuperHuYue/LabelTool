@@ -8,7 +8,7 @@ import QtQuick.Window 2.13
  yMoveable:水平轴是否能调整
  vBarenable:是否显示垂直轴拖动框
  hBarenable:是否显示水平轴拖动框
- listviewdata:显示到界面上的数据 list类型，目前只测试了text类型
+ listviewdata:显示到界面上的数据 list类型，目前只测试了text类型,同时delegate只处理了其中为path的参数(需要根据实际应用进行删减)
  rightclickmenu中的条目需要
  注意：动态出现scrolbar尚有bug---line28有解释
 */
@@ -17,7 +17,13 @@ Rectangle{
     color: 'blue'
     implicitHeight: 300
     implicitWidth: 100
-    property var listviewdata: ['william']
+
+    ListModel{
+        id:innerlistviewdata
+    }
+
+    //这里仅允许将该参数进行抛出，如果直接抛出root.model由外部赋值则不会进行显示，推测是只能对初始化的model进行更改而不能在外面替换
+    property var listviewdata:innerlistviewdata
     property var xMoveable: false
     property var yMoveable: false
     property var hBarenable: false
@@ -30,8 +36,8 @@ Rectangle{
     //readonly property var finalhBarenable: (hBarenable && background_area.containsMouse)
     ////////////////////////////////////////////////////////////////////////////////
 
-    readonly property var finalvBarenable: vBarenable
-    readonly property var finalhBarenable: hBarenable
+    readonly property bool finalvBarenable: vBarenable
+    readonly property bool finalhBarenable: hBarenable
     //warning :解释方式为顺序从上往下的方式，如果controlBackgroundArea放置在最后，那么它将会覆盖整个空间成为最上层的mousearea，而放在这里则是最底层的mousearea,放置在顶层则会让后面的mousearea消息的
     //propaganda出现问题，导致出错！！！！！
     MouseArea{
@@ -45,6 +51,7 @@ Rectangle{
     }
     CustomMenu{
         id:rightclickmenu
+        title: qsTr('NoDisplay')
         Action { text: qsTr("Tool Bar"); checkable: true; onTriggered: {console.log('add some method....')}}
         Action { text: qsTr("Side Bar"); checkable: true; checked: true }
         Action { text: qsTr("Status Bar"); checkable: true; checked: true }
@@ -59,7 +66,6 @@ Rectangle{
         Menu {
             title: qsTr("Advanced")
             Action{text: qsTr('hello')}
-            // ...
         }
     }
 
@@ -77,14 +83,13 @@ Rectangle{
          ListView{
              id:root
              z:0
-             model: listviewdata
              property int max_text_length: 0
-//             anchors.left: listBackground.left
-             width:max_text_length
+             width:max_text_length > listBackground.width? max_text_length:listBackground.width
              height: contentHeight
+             model: innerlistviewdata
              focus: true
              x: -hBar.position * width
-             y: -vBar.position * contentHeight
+             y: vBar.position==1? (-vBar.position + vBar.size) * contentHeight:-vBar.position * contentHeight
              delegate:Rectangle{
                  id:warpper
                  width: root.width
@@ -94,12 +99,13 @@ Rectangle{
                      id:info
                      font: textMetrics.font
                      anchors.left: warpper.left
-                     text: modelData
+                     text: path //modelData
                      anchors.horizontalCenter: warpper.horizontalCenter
                      anchors.verticalCenter: warpper.verticalCenter
                      color:warpper.ListView.isCurrentItem?'red':'black'
                      Component.onCompleted: {
-                         textMetrics.text = modelData
+                         console.log('text_complete:', path)
+                         textMetrics.text = path
                          var tmp = textMetrics.tightBoundingRect.width
                          if(tmp > root.max_text_length){
                              root.max_text_length = tmp
@@ -130,6 +136,7 @@ Rectangle{
              property bool xStretch: false
              property bool yStretch: false
              property var pos:[]
+             scrollGestureEnabled: false
              propagateComposedEvents: true     //****消息向下传递
              hoverEnabled: true
 
@@ -204,14 +211,36 @@ Rectangle{
                      controlBackground.height = mouseY
                  }
              }
+             onWheel: {
+                 var pos = 0
+                 if(wheel.angleDelta.y < 0){
+                     pos = vBar.position + vBar.size;
+                     console.log(pos)
+                     if(pos > 1) {
+                         console.log('set to one...')
+                         vBar.position = 1;
+                     }
+                     else{
+                         console.log('Increasing...')
+                         vBar.position = pos;
+                     }
+                 }else
+                 {
+                     pos = vBar.position - vBar.size;
+                     console.log(pos)
+                     if(pos < 0) {
+                         console.log('set to zero....')
+                         vBar.position = 0;
+                     }
+                     else{
+                         console.log('decresing... ')
+                         vBar.position = pos
+                     }
+                 }
+//               console.log(wheel.angleDelta.x,'....',wheel.angleDelta.y)
+                 wheel.accepted = true
+             }
          }
-
- //        Keys.onPressed: {
- //            if(event.key === Qt.Key_Left)
- //            {
- //                console.log('key pressed....')
- //            }
- //        }
     }
 
     ScrollBar{
@@ -233,7 +262,7 @@ Rectangle{
             color: 'purple'
         }
         onPositionChanged: {
-            console.log(root.contentHeight , '   ',listBackground.height)
+            console.log('contentHeight: ',root.contentHeight , '   ','list_background: ',listBackground.height)
         }
     }
     ScrollBar{

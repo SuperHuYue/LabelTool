@@ -3,24 +3,6 @@ import QtQuick.Controls 2.13
 
 Menu {
     id: menu
-   // Action { text: qsTr("Tool Bar"); checkable: true }
-   // Action { text: qsTr("Side Bar"); checkable: true; checked: true }
-   // Action { text: qsTr("Status Bar"); checkable: true; checked: true }
-   //
-   // MenuSeparator {
-   //     contentItem: Rectangle {
-   //         implicitWidth: 200
-   //         implicitHeight: 1
-   //         color: "#21be2b"
-   //     }
-   // }
-
-
-   // Menu {
-   //     title: qsTr("Advanced")
-   //     Action{text: qsTr('hello')}
-   //
-   // }
 
     topPadding: 2
     bottomPadding: 2
@@ -47,24 +29,7 @@ Menu {
                 ctx.fill()
             }
         }
-        //设定mousearea为了让highlighted生效，同时需要重绘制arrow,同时mouseArea会需改原本的clicked消息，需要对该内容人为的进行转w发
-        MouseArea{
-            anchors.fill:parent
-            hoverEnabled: true
-            onContainsMouseChanged: {
-                       if(menuItem.subMenu !== null){
-                           //console.log(containsMouse)
-                      }
-                      menuItem.highlighted = containsMouse  //是否拥有鼠标（即鼠标是否悬停在上面）
-                      arrow.requestPaint()
-            }
-            onClicked: { // 转发click信号
-                menuItem.clicked()
-                if(menuItem.checkable === true)
-                    menuItem.checked = !menuItem.checked
-            }
 
-        }
         //对check标识进行定制
         indicator: Item {
             implicitWidth: 40
@@ -105,6 +70,35 @@ Menu {
             opacity: enabled ? 1 : 0.3
             color: menuItem.highlighted ? "#21be2b" : "transparent"
         }
+        //这一部分的定制小心更改
+        //设定mousearea为了让highlighted生效，同时需要重绘制arrow,同时由于mousearea覆盖了原结构，trigger需要重新转发
+        MouseArea{
+            anchors.fill:parent
+            hoverEnabled: true
+            onContainsMouseChanged: {
+                       if(menuItem.subMenu !== null){
+                           //console.log(containsMouse)
+                      }
+                      menuItem.highlighted = containsMouse  //是否拥有鼠标（即鼠标是否悬停在上面）
+                      arrow.requestPaint()
+            }
+            onClicked: { // 转发click信号
+                if(menuItem.checkable === true)
+                    menuItem.checked = !menuItem.checked
+                else if (menuItem.subMenu === true)
+                {
+                }
+                else
+                {
+                    if(menuItem.action !== null)
+                    {
+                        menuItem.action.trigger()
+                    }
+
+                }
+            }
+        }
+
     }
 //整个menu的背景
     background: Rectangle {
