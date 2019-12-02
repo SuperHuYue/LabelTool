@@ -7,7 +7,9 @@ from PySide2.QtQuick import QQuickPaintedItem
 from PySide2.QtGui import QImage
 import numpy as np
 
-
+#用于图形显示的模块(可进行重载conductImage完成图像处理的能力)
+#信号引出sigAlert，sigCurFrame，sigTotalFrame 如需使用其功能需要在qml中进行connect
+#显示图像时候，会对图像进行等比例压缩(尚未完成):目前想法是按照长宽相对较低的进行压缩
 class ImageViewer(QQuickPaintedItem):
     sigAlert = Signal(str) #警告信息
     sigCurFrame = Signal(int) #当前帧数报告
@@ -183,7 +185,4 @@ class ImageViewer(QQuickPaintedItem):
             self.sigAlert.emit("not_right_channel....it has channel number:{}".format(channel))
             raise Exception("not_right_channel....it has channel number: ",channel)
         return img
-
-
-
 

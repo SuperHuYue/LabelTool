@@ -63,7 +63,6 @@ ApplicationWindow{
     Rectangle{
         id:image_view_background
         anchors.left:path_view.right
-        anchors.leftMargin: 20
         anchors.right: root.right
         anchors.bottom: root.bottom
         anchors.top: path_view.top

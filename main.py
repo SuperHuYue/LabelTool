@@ -5,7 +5,6 @@ from PySide2.QtQml import QQmlApplicationEngine,qmlRegisterType
 from PySide2.QtCore import QUrl
 
 if __name__ == '__main__':
-
     sys_argv = sys.argv
     sys_argv += ['--style', 'default']
     app = QGuiApplication(sys_argv)
