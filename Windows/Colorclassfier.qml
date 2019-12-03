@@ -4,15 +4,22 @@ import QtQuick.Controls 2.13
 import QtQuick.Dialogs 1.0
 import '../Custom'
 import ImageViewer 1.0
+
 ApplicationWindow{
     property int imageview_curFrame: 0
     property int imageview_totalFrame: 0
     width: 640
     height: 320
+
     Rectangle{
         id:root
         anchors.fill: parent
+//        focus: true
+//        Keys.onPressed: {
+//            console.log('key press...')
+//        }
     }
+
 
     FileDialog{
         id:fileChooseDialog
@@ -48,6 +55,66 @@ ApplicationWindow{
             Action{text: qsTr('contract us')}
         }
     }
+
+    ImageViewer{
+        property bool ctrl_press: false
+        id:image_view
+        z:0
+        anchors.left:path_view.right
+        anchors.right: root.right
+        anchors.bottom: root.bottom
+        anchors.top: path_view.top
+        visible:true
+        Text {
+            id:image_view_frame_idx
+            anchors.centerIn: parent
+            text: imageview_curFrame + '/' + imageview_totalFrame
+            color: 'red'
+            z:1
+        }
+
+        MouseArea{
+            id:image_view_mousearea
+            anchors.fill: parent
+            focus: true
+            onClicked: {
+                console.log('image click...')
+                image_view.next()
+//                image_view.imageStretch = 2
+//                image_view.setRange('lab',[0,0,140],[255,255,255])
+                image_view.show()
+
+            }
+             onWheel: {
+                 if(image_view.ctrl_press === true){
+                     if(wheel.angleDelta.y < 0){
+                         image_view.imageStretch = image_view.imageStretch + 0.1
+                     }
+                     else{
+                         image_view.imageStretch = image_view.imageStretch - 0.1
+                     }
+                     image_view.show()
+                 }
+                 console.log('Now ImageStretch...',image_view.imageStretch)
+                 wheel.accepted = true
+             }
+             Keys.onPressed:{
+                 if(event.key === Qt.Key_Control)
+                 {
+                     image_view.ctrl_press = true
+                 }
+                 console.log('ctrl_press: ',image_view.ctrl_press)
+             }
+             Keys.onReleased: {
+                 if(event.key === Qt.Key_Control)
+                 {
+                     image_view.ctrl_press = false
+                 }
+                 console.log('ctrl_press: ',image_view.ctrl_press)
+             }
+        }
+    }
+
     CustomListView{
         id:path_view
         anchors.top: menubar.bottom
@@ -60,62 +127,6 @@ ApplicationWindow{
         yMoveable:true
 
     }
-//    Rectangle{
-//        id:image_view_background
-//        anchors.left:path_view.right
-//        anchors.right: root.right
-//        anchors.bottom: root.bottom
-//        anchors.top: path_view.top
-//        color: 'green'
-//        Text {
-//            id:image_view_frame_idx
-//            anchors.centerIn: parent
-//            text: imageview_curFrame + '/' + imageview_totalFrame
-//            color: 'red'
-//            z:1
-//        }
-//        ImageViewer{
-//            id:image_view
-//            z:0
-//            anchors.fill:parent
-//            visible:true
-//            MouseArea{
-//                id:image_view_mousearea
-//                anchors.fill: parent
-//                onClicked: {
-//                    image_view.next()
-//                    image_view.setRange('lab',[0,0,140],[255,255,255])
-//                    image_view.show()
-//                }
-//            }
-//        }
-//    }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ImageViewer{
-            id:image_view
-            z:0
-            anchors.left:path_view.right
-            anchors.right: root.right
-            anchors.bottom: root.bottom
-            anchors.top: path_view.top
-            visible:true
-            Text {
-                id:image_view_frame_idx
-                anchors.centerIn: parent
-                text: imageview_curFrame + '/' + imageview_totalFrame
-                color: 'red'
-                z:1
-            }
-            MouseArea{
-                id:image_view_mousearea
-                anchors.fill: parent
-                onClicked: {
-                    image_view.next()
-                    image_view.setRange('lab',[0,0,140],[255,255,255])
-                    image_view.show()
-                }
-            }
-        }
 //处理信号连接
 
     signal sigImageViewAlert(string msg)

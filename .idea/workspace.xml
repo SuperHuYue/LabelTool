@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -165,7 +163,21 @@
       <option name="project" value="LOCAL" />
       <updated>1575276669279</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="图形界面丰富">
+      <created>1575355326994</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1575355326994</updated>
+    </task>
+    <task id="LOCAL-00008" summary="图形界面丰富">
+      <created>1575355337493</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1575355337493</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -192,7 +204,8 @@
     <MESSAGE value="customListview bug修复1" />
     <MESSAGE value="listiew完善" />
     <MESSAGE value="加入图形显示模块，预留图形处理接口" />
-    <option name="LAST_COMMIT_MESSAGE" value="加入图形显示模块，预留图形处理接口" />
+    <MESSAGE value="图形界面丰富" />
+    <option name="LAST_COMMIT_MESSAGE" value="图形界面丰富" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

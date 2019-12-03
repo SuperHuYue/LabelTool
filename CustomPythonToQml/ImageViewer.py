@@ -30,8 +30,49 @@ class ImageViewer(QQuickPaintedItem):
         self.__curFrame = 0                                  #当前帧号
         self.__totalFrame = 0                                #总帧号
         self.__loadReady = False                             #是否加载完毕
-        self.__imageStrechRadio = 1.0                        #显示图片的缩放比例
+        ################################################################################
+        #图形绘制相关
+        #依据控件和图像长宽推导出的初始图像显示位置
+        self.__oriImageX = None                              #绘制图形起点x（宽轴）
+        self.__oriImageY = None                              #绘制图形终点（高轴）
+        self.__oriImageStretchRadio = None                   #原始显示图片的缩放比例
+        #外部给予的放大缩小offset
+        self.__ImageX_Offset = 0                             #与__oriImageX的偏差
+        self.__ImageY_Offset = 0
+        self.__ImageStretch_Offset = 0
+        #最终绘制的图像参数
+        self.__ShowImageX  = None
+        self.__ShowImageY  = None
+        self.__ShowStretch = None
+        ################################################################################
         self.sigShowReady.connect(self.show)
+
+    def setImageXOffset(self,xOffset):
+        if self.__ImageX_Offset is not xOffset:
+            self.__ImageX_Offset = xOffset
+            pass
+    def getImageXOffset(self):
+        return self.__ImageX_Offset
+
+    def setImageYOffset(self,yOffset):
+        if self.__ImageY_Offset is not yOffset:
+            self.__ImageY_Offset = yOffset
+            pass
+
+    def getImageYOffset(self):
+        return self.__ImageY_Offset
+
+    def getImageStretchOffset(self):
+        return self.__ImageStretch_Offset
+
+    def setImageStretchOffset(self,stretchOffset):
+        if self.__ImageStretch_Offset is not stretchOffset:
+            self.__ImageStretch_Offset = stretchOffset
+            pass
+
+    imageX = Property(float,getImageXOffset,setImageXOffset)
+    imageY = Property(float,getImageYOffset,setImageYOffset)
+    imageStretch = Property(float,getImageStretchOffset,setImageStretchOffset)
 
     def load_init(self):
         self.__path = None
@@ -45,6 +86,15 @@ class ImageViewer(QQuickPaintedItem):
         self.__curFrame = 0
         self.__totalFrame = 0
         self.__loadReady = False
+        self.__oriImageX = None
+        self.__oriImageY = None
+        self.__oriImageStretchRadio = None
+        self.__ImageX_Offset = 0
+        self.__ImageY_Offset = 0
+        self.__ImageStretch_Offset = 0
+        self.__ShowImageX = None
+        self.__ShowImageY = None
+        self.__ShowStretch = None
 
     @staticmethod
     def videoFeedContainer(Obj):#Obj image_viewer本身
@@ -141,9 +191,6 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
             self.loadImage()
             self.conductImage()
-            # self.__stayRadioResize()
-            # qimage = self.cvt_CV2QImage(self.__image)
-            # self.__imageShow = QPixmap.fromImage(qimage)
             self.update()
 
     @Slot(int)
@@ -152,13 +199,10 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
          self.loadImage()
          self.conductImage()
-         # self.__stayRadioResize()
-         # qimage = self.cvt_CV2QImage(self.__image)
-         # self.__imageShow = QPixmap.fromImage(qimage)
          self.update()
         pass
 
-    #保持比例的缩放,图片的尺寸会始终<跟随画板的尺寸>进行变化(用作初始化和还原)
+    #缩放控制,确定图片在显示中的位置
     def __stayRadioResize(self,img):
         framework_width  = self.width()      #画版的宽度
         framework_height = self.height()     #画版的高度
@@ -169,15 +213,21 @@ class ImageViewer(QQuickPaintedItem):
         image_width  = image.shape[1]
         image_width_bigger = True if image_width > image_height else False
         if image_width_bigger is True:
-            self.__imageStrechRadio = framework_width / image_width
-            image = cv2.resize(image,None,fx = self.__imageStrechRadio,fy=self.__imageStrechRadio,interpolation=cv2.INTER_LINEAR)
+            self.__oriImageStretchRadio = framework_width / image_width
             pass
         else:
-            self.__imageStrechRadio = framework_height / image_height
-            image = cv2.resize(image,None,fx = self.__imageStrechRadio,fy=self.__imageStrechRadio,interpolation=cv2.INTER_LINEAR)
+            self.__oriImageStretchRadio = framework_height / image_height
             pass
+        self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
+        image = cv2.resize(image, None,
+                           fx=self.__ShowStretch,
+                           fy=self.__ShowStretch,
+                           interpolation=cv2.INTER_LINEAR)
+        self.__oriImageX = self.width() / 2 - image.shape[1] / 2
+        self.__oriImageY = self.height() / 2 - image.shape[0] / 2
+        self.__ShowImageX = self.__oriImageX + self.__ImageX_Offset
+        self.__ShowImageY = self.__oriImageY + self.__ImageY_Offset
         return image
-
 
     @Slot()
     def next(self):
@@ -195,8 +245,8 @@ class ImageViewer(QQuickPaintedItem):
         qimage = self.cvt_CV2QImage(image)
         self.__imageShow = QPixmap.fromImage(qimage)
         if self.__imageShow.isNull() is not True:
-                painter.drawPixmap(self.width()/2 - self.__imageShow.width()/2,
-                                   self.height()/2 - self.__imageShow.height()/2,
+                painter.drawPixmap(self.__ShowImageX,
+                                   self.__ShowImageY,
                                    self.__imageShow.width(),
                                    self.__imageShow.height(),
                                    self.__imageShow)
@@ -211,7 +261,7 @@ class ImageViewer(QQuickPaintedItem):
             bits_per_channel = 8
         else:
             self.sigAlert.emit("Convert error...")
-        channel =  1 if len(cv_data.shape) is 2 else cv_data.shape[2]
+        channel = 1 if len(cv_data.shape) is 2 else cv_data.shape[2]
         if channel is 1:
             img = QImage(cv_data.data,cv_data.shape[1],cv_data.shape[0],cv_data.shape[1],QImage.Format_Indexed8)
         elif channel is 3:
