@@ -40,6 +40,7 @@ class ImageViewer(QQuickPaintedItem):
         self.__ImageX_Offset = 0                             #与__oriImageX的偏差
         self.__ImageY_Offset = 0
         self.__ImageStretch_Offset = 0
+        self.__ImageLastValid_Offset = 0                     #最近的一次有效偏差
         #最终绘制的图像参数
         self.__ShowImageX  = None
         self.__ShowImageY  = None
@@ -79,7 +80,7 @@ class ImageViewer(QQuickPaintedItem):
         self.__imageShow = QPixmap()
         self.__sourceImage = None
         self.__image = None
-        self.__type =None
+        self.__type = None
         self.__imageHeight = None
         self.__imageWidth = None
         self.__imageContainer = dict()
@@ -92,6 +93,7 @@ class ImageViewer(QQuickPaintedItem):
         self.__ImageX_Offset = 0
         self.__ImageY_Offset = 0
         self.__ImageStretch_Offset = 0
+        self.__ImageLastValid_Offset = 0
         self.__ShowImageX = None
         self.__ShowImageY = None
         self.__ShowStretch = None
@@ -218,7 +220,14 @@ class ImageViewer(QQuickPaintedItem):
         else:
             self.__oriImageStretchRadio = framework_height / image_height
             pass
-        self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
+
+        if (self.__oriImageStretchRadio + self.__ImageStretch_Offset) < 0.01:
+            self.__ShowStretch = 0.01
+            self.__ImageStretch_Offset = self.__ImageLastValid_Offset
+        else:
+            self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
+            self.__ImageLastValid_Offset = self.__ImageStretch_Offset
+
         image = cv2.resize(image, None,
                            fx=self.__ShowStretch,
                            fy=self.__ShowStretch,

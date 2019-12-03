@@ -56,8 +56,21 @@ ApplicationWindow{
         }
     }
 
+    CustomListView{
+        id:path_view
+        anchors.top: menubar.bottom
+        anchors.left: menubar.left
+        width: root.width / 10
+        anchors.bottom: root.bottom
+        vBarenable:true
+        hBarenable:true
+        xMoveable: true
+        yMoveable:true
+
+    }
     ImageViewer{
         property bool ctrl_press: false
+        property double stretch_step: 0.1
         id:image_view
         z:0
         anchors.left:path_view.right
@@ -87,11 +100,11 @@ ApplicationWindow{
             }
              onWheel: {
                  if(image_view.ctrl_press === true){
-                     if(wheel.angleDelta.y < 0){
-                         image_view.imageStretch = image_view.imageStretch + 0.1
+                     if(wheel.angleDelta.y < 0){ //缩小
+                             image_view.imageStretch = image_view.imageStretch - 0.1
                      }
-                     else{
-                         image_view.imageStretch = image_view.imageStretch - 0.1
+                     else{  					//放大
+                         image_view.imageStretch = image_view.imageStretch + 0.1
                      }
                      image_view.show()
                  }
@@ -115,20 +128,7 @@ ApplicationWindow{
         }
     }
 
-    CustomListView{
-        id:path_view
-        anchors.top: menubar.bottom
-        anchors.left: menubar.left
-        width: root.width / 10
-        anchors.bottom: root.bottom
-        vBarenable:true
-        hBarenable:true
-        xMoveable: true
-        yMoveable:true
-
-    }
 //处理信号连接
-
     signal sigImageViewAlert(string msg)
     signal sigImageViewCurFrame(int msg)
     signal sigImageViewTotalFrame(int msg)

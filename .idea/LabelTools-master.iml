@@ -6,8 +6,9 @@
       <sourceFolder url="file://$MODULE_DIR$/Custom" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CustomPythonToQml" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Windows" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/projectRelated/projectRelatedpyObj" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (Ocr_plateReg)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

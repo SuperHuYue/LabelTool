@@ -21,7 +21,6 @@ Rectangle{
     ListModel{
         id:innerlistviewdata
     }
-
     //这里仅允许将该参数进行抛出，如果直接抛出root.model由外部赋值则不会进行显示，推测是只能对初始化的model进行更改而不能在外面替换
     property var listviewdata:innerlistviewdata
     property var xMoveable: false
@@ -87,7 +86,6 @@ Rectangle{
              width:max_text_length > listBackground.width? max_text_length:listBackground.width
              height: contentHeight
              model: innerlistviewdata
-             focus: true
              x: -hBar.position * width
              y: vBar.position==1? (-vBar.position + vBar.size) * contentHeight:-vBar.position * contentHeight
              delegate:Rectangle{
@@ -127,6 +125,7 @@ Rectangle{
              }
 
          }
+
          MouseArea{
              id:background_area
              anchors.fill:listBackground
@@ -265,13 +264,14 @@ Rectangle{
             console.log('contentHeight: ',root.contentHeight , '   ','list_background: ',listBackground.height)
         }
     }
+
     ScrollBar{
         id:hBar
         z:1
         active: pressed
         orientation: Qt.Horizontal
         visible: finalhBarenable?true:false
-        size:listBackground.width/ root.width
+        size:listBackground.width / root.width
         anchors.bottom: controlBackground.bottom
         anchors.left: controlBackground.left
         width: finalvBarenable?(controlBackground.width - vBar.width):controlBackground.width
