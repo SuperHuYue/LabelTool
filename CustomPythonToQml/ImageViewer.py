@@ -19,7 +19,7 @@ class ImageViewer(QQuickPaintedItem):
         super().__init__(parent)
         self.__path = None                                   #当前处理图像路径
         self.__imageShow = QPixmap()                         #当前显示图像位图
-        self.__image = None                                  #opencv中读取的内容,以及后续处理保存的内容（尚未转化为QPixmap）
+        self.__image = None                                  #opencv中读取的内容(原图,中间处理内容不允许保存在此类中)
         # self.__percentage = None                           #当前图像加载/处理进度
         self.__type = None                                   #图像类型,视频还是图片
         self.__imageWidth = None                             #载入图像宽度
@@ -30,11 +30,13 @@ class ImageViewer(QQuickPaintedItem):
         self.__curFrame = 0                                  #当前帧号
         self.__totalFrame = 0                                #总帧号
         self.__loadReady = False                             #是否加载完毕
+        self.__imageStrechRadio = 1.0                        #显示图片的缩放比例
         self.sigShowReady.connect(self.show)
 
     def load_init(self):
         self.__path = None
         self.__imageShow = QPixmap()
+        self.__sourceImage = None
         self.__image = None
         self.__type =None
         self.__imageHeight = None
@@ -83,7 +85,6 @@ class ImageViewer(QQuickPaintedItem):
     totalFrame = Property(int, getTotalFrame, setTotalFrame, notify=sigTotalFrame)
     curFrame = Property(int, getCurFrame, setCurFrame, notify=sigCurFrame)
 
-
     @Slot(QUrl)
     def load(self,url):
         self.load_init()
@@ -97,7 +98,6 @@ class ImageViewer(QQuickPaintedItem):
         self.setLoadReady(False)
         if suffix in self.__SupportImageType:
             self.__type = "image"
-            # self.__image = cv2.imread(absPath)
             self.__imageContainer[1] = cv2.imread(absPath)
             self.setCurFrame(1)
             self.setTotalFrame(1)
@@ -118,10 +118,14 @@ class ImageViewer(QQuickPaintedItem):
     #加载图片
     def loadImage(self,num=None):
         if num is not None:
-            if num  > self.getTotalFrame():
+            if num > self.getTotalFrame():
                 num = self.getTotalFrame()
             self.setCurFrame(num)
         self.__image = self.__imageContainer[self.getCurFrame()]
+        return self.__image
+
+    def setImage(self,img):
+        self.__image = img
 
     #供子类进行重写
     def conductImage(self):
@@ -137,8 +141,9 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
             self.loadImage()
             self.conductImage()
-            qimage = self.cvt_CV2QImage(self.__image)
-            self.__imageShow = QPixmap.fromImage(qimage)
+            # self.__stayRadioResize()
+            # qimage = self.cvt_CV2QImage(self.__image)
+            # self.__imageShow = QPixmap.fromImage(qimage)
             self.update()
 
     @Slot(int)
@@ -147,10 +152,32 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
          self.loadImage()
          self.conductImage()
-         qimage = self.cvt_CV2QImage(self.__image)
-         self.__imageShow = QPixmap.fromImage(qimage)
+         # self.__stayRadioResize()
+         # qimage = self.cvt_CV2QImage(self.__image)
+         # self.__imageShow = QPixmap.fromImage(qimage)
          self.update()
         pass
+
+    #保持比例的缩放,图片的尺寸会始终<跟随画板的尺寸>进行变化(用作初始化和还原)
+    def __stayRadioResize(self,img):
+        framework_width  = self.width()      #画版的宽度
+        framework_height = self.height()     #画版的高度
+        if self.__image is None:
+            return
+        image = img
+        image_height = image.shape[0]
+        image_width  = image.shape[1]
+        image_width_bigger = True if image_width > image_height else False
+        if image_width_bigger is True:
+            self.__imageStrechRadio = framework_width / image_width
+            image = cv2.resize(image,None,fx = self.__imageStrechRadio,fy=self.__imageStrechRadio,interpolation=cv2.INTER_LINEAR)
+            pass
+        else:
+            self.__imageStrechRadio = framework_height / image_height
+            image = cv2.resize(image,None,fx = self.__imageStrechRadio,fy=self.__imageStrechRadio,interpolation=cv2.INTER_LINEAR)
+            pass
+        return image
+
 
     @Slot()
     def next(self):
@@ -162,8 +189,17 @@ class ImageViewer(QQuickPaintedItem):
     def paint(self, painter):
         if painter is None:
             raise Exception("painter None Exception...")
+        if self.__image is None:
+            return
+        image = self.__stayRadioResize(self.__image)
+        qimage = self.cvt_CV2QImage(image)
+        self.__imageShow = QPixmap.fromImage(qimage)
         if self.__imageShow.isNull() is not True:
-            painter.drawPixmap(0,0,self.width(),self.height(),self.__imageShow)
+                painter.drawPixmap(self.width()/2 - self.__imageShow.width()/2,
+                                   self.height()/2 - self.__imageShow.height()/2,
+                                   self.__imageShow.width(),
+                                   self.__imageShow.height(),
+                                   self.__imageShow)
         else:
             self.sigAlert.emit('image is null...')
         pass

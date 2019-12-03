@@ -60,35 +60,62 @@ ApplicationWindow{
         yMoveable:true
 
     }
-    Rectangle{
-        id:image_view_background
-        anchors.left:path_view.right
-        anchors.right: root.right
-        anchors.bottom: root.bottom
-        anchors.top: path_view.top
-        color: 'green'
-        Text {
-            id:image_view_frame_idx
-            anchors.centerIn: parent
-            text: imageview_curFrame + '/' + imageview_totalFrame
-            color: 'red'
-            z:1
-        }
+//    Rectangle{
+//        id:image_view_background
+//        anchors.left:path_view.right
+//        anchors.right: root.right
+//        anchors.bottom: root.bottom
+//        anchors.top: path_view.top
+//        color: 'green'
+//        Text {
+//            id:image_view_frame_idx
+//            anchors.centerIn: parent
+//            text: imageview_curFrame + '/' + imageview_totalFrame
+//            color: 'red'
+//            z:1
+//        }
+//        ImageViewer{
+//            id:image_view
+//            z:0
+//            anchors.fill:parent
+//            visible:true
+//            MouseArea{
+//                id:image_view_mousearea
+//                anchors.fill: parent
+//                onClicked: {
+//                    image_view.next()
+//                    image_view.setRange('lab',[0,0,140],[255,255,255])
+//                    image_view.show()
+//                }
+//            }
+//        }
+//    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ImageViewer{
             id:image_view
             z:0
-            anchors.fill:parent
+            anchors.left:path_view.right
+            anchors.right: root.right
+            anchors.bottom: root.bottom
+            anchors.top: path_view.top
             visible:true
+            Text {
+                id:image_view_frame_idx
+                anchors.centerIn: parent
+                text: imageview_curFrame + '/' + imageview_totalFrame
+                color: 'red'
+                z:1
+            }
             MouseArea{
                 id:image_view_mousearea
                 anchors.fill: parent
                 onClicked: {
                     image_view.next()
+                    image_view.setRange('lab',[0,0,140],[255,255,255])
+                    image_view.show()
                 }
             }
         }
-    }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //处理信号连接
 
     signal sigImageViewAlert(string msg)
