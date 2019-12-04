@@ -47,6 +47,24 @@ class ImageViewer(QQuickPaintedItem):
         ################################################################################
         self.sigShowReady.connect(self.show)
 
+    def show_Init(self):
+        ################################################################################
+        # 图形绘制相关
+        # 依据控件和图像长宽推导出的初始图像显示位置
+        self.__oriImageX = None  # 绘制图形起点x（宽轴）
+        self.__oriImageY = None  # 绘制图形终点（高轴）
+        self.__oriImageStretchRadio = None  # 原始显示图片的缩放比例
+        # 外部给予的放大缩小offset
+        self.__ImageStretch_Offset = 0
+        self.__ImageLastValid_Offset = 0  # 最近的一次有效偏差
+        self.__MousePosX = None  # 鼠标点击框架中的位置
+        self.__MousePosY = None
+        # 最终绘制的图像参数
+        self.__ShowImageX = None
+        self.__ShowImageY = None
+        self.__ShowStretch = None
+        ################################################################################
+
     @Slot(float,float)
     def setMousePos(self,x,y):
         self.__MousePosX = x
@@ -183,6 +201,7 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
             self.loadImage()
             self.conductImage()
+            self.show_Init()
             # image = self.__stayRadioResize(self.__image)
             # qimage = self.cvt_CV2QImage(image)
             # self.__imageShow = QPixmap.fromImage(qimage)
@@ -192,6 +211,7 @@ class ImageViewer(QQuickPaintedItem):
     def target_show(self,num):
         self.setCurFrame(num)
         if self.getLoadReady() is True:
+         self.show_Init()
          self.loadImage()
          self.conductImage()
          self.update()
@@ -206,13 +226,15 @@ class ImageViewer(QQuickPaintedItem):
         image = img                          #原图
         image_height = image.shape[0]
         image_width  = image.shape[1]
-        self.__oriImageStretchRadio = (framework_width / image_width)  if (framework_width / image_width < framework_height / image_height) else framework_width / image_height
+        self.__oriImageStretchRadio = (framework_width / image_width)  if ((framework_width / image_width) < (framework_height / image_height)) else (framework_height / image_height)
+        print(self.__oriImageStretchRadio)
         if (self.__oriImageStretchRadio + self.__ImageStretch_Offset) < 0.01:
             self.__ShowStretch = 0.01
             self.__ImageStretch_Offset = self.__ImageLastValid_Offset
         else:
             self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
             self.__ImageLastValid_Offset = self.__ImageStretch_Offset
+        print(self.__ShowStretch)
         resized_img = cv2.resize(image, None,
                            fx=self.__ShowStretch,
                            fy=self.__ShowStretch,

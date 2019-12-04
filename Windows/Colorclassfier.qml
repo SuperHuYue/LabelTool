@@ -161,7 +161,7 @@ ApplicationWindow{
                      else{  					//放大
                          image_view.imageStretch = image_view.imageStretch + 0.1
                      }
-                     image_view.show()
+                     image_view.update()
                  }
                  console.log('Now ImageStretch...',image_view.imageStretch)
                  wheel.accepted = true
