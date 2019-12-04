@@ -9,6 +9,7 @@ import numpy as np
 
 #用于图形显示的模块(可进行重载conductImage完成图像处理的能力)
 #信号引出sigAlert，sigCurFrame，sigTotalFrame 如需使用其功能需要在qml中进行connect
+#如果对当前图片进行变化（不调用重载的conductImage)---->使用update，使用show或者showtarget会调用conductImage同时重置图像位置
 class ImageViewer(QQuickPaintedItem):
     sigAlert = Signal(str) #警告信息
     sigCurFrame = Signal(int) #当前帧数报告
