@@ -213,30 +213,22 @@ class ImageViewer(QQuickPaintedItem):
         image = img
         image_height = image.shape[0]
         image_width  = image.shape[1]
-        image_width_bigger = True if image_width > image_height else False
-        if image_width_bigger is True:
-            self.__oriImageStretchRadio = framework_width / image_width
-            pass
-        else:
-            self.__oriImageStretchRadio = framework_height / image_height
-            pass
-
+        self.__oriImageStretchRadio = (framework_width / image_width)  if (framework_width / image_width < framework_height / image_height) else framework_width / image_height
         if (self.__oriImageStretchRadio + self.__ImageStretch_Offset) < 0.01:
             self.__ShowStretch = 0.01
             self.__ImageStretch_Offset = self.__ImageLastValid_Offset
         else:
             self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
             self.__ImageLastValid_Offset = self.__ImageStretch_Offset
-
-        image = cv2.resize(image, None,
+        resized_img = cv2.resize(image, None,
                            fx=self.__ShowStretch,
                            fy=self.__ShowStretch,
                            interpolation=cv2.INTER_LINEAR)
-        self.__oriImageX = self.width() / 2 - image.shape[1] / 2
-        self.__oriImageY = self.height() / 2 - image.shape[0] / 2
+        self.__oriImageX = self.width() / 2 - resized_img.shape[1] / 2
+        self.__oriImageY = self.height() / 2 - resized_img.shape[0] / 2
         self.__ShowImageX = self.__oriImageX + self.__ImageX_Offset
         self.__ShowImageY = self.__oriImageY + self.__ImageY_Offset
-        return image
+        return resized_img
 
     @Slot()
     def next(self):
