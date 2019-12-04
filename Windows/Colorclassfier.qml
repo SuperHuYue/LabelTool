@@ -14,10 +14,6 @@ ApplicationWindow{
     Rectangle{
         id:root
         anchors.fill: parent
-//        focus: true
-//        Keys.onPressed: {
-//            console.log('key press...')
-//        }
     }
 
 
@@ -69,7 +65,7 @@ ApplicationWindow{
 
     }
     ImageViewer{
-        property bool ctrl_press: false
+//        property bool ctrl_press: false
         property double stretch_step: 0.1
         id:image_view
         z:0
@@ -93,13 +89,14 @@ ApplicationWindow{
             onClicked: {
                 console.log('image click...')
                 image_view.next()
-//                image_view.imageStretch = 2
-//                image_view.setRange('lab',[0,0,140],[255,255,255])
+//                image_view.setRange('lab',[0,0,140],[255,255,255]) //设置变换颜色的方法
                 image_view.show()
 
             }
              onWheel: {
-                 if(image_view.ctrl_press === true){
+                 console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
+                 if(wheel.modifiers &Qt.ControlModifier){
+                     image_view.setMousePos(wheel.x,wheel.y)
                      if(wheel.angleDelta.y < 0){ //缩小
                              image_view.imageStretch = image_view.imageStretch - 0.1
                      }
@@ -110,20 +107,6 @@ ApplicationWindow{
                  }
                  console.log('Now ImageStretch...',image_view.imageStretch)
                  wheel.accepted = true
-             }
-             Keys.onPressed:{
-                 if(event.key === Qt.Key_Control)
-                 {
-                     image_view.ctrl_press = true
-                 }
-                 console.log('ctrl_press: ',image_view.ctrl_press)
-             }
-             Keys.onReleased: {
-                 if(event.key === Qt.Key_Control)
-                 {
-                     image_view.ctrl_press = false
-                 }
-                 console.log('ctrl_press: ',image_view.ctrl_press)
              }
         }
     }

@@ -37,10 +37,10 @@ class ImageViewer(QQuickPaintedItem):
         self.__oriImageY = None                              #绘制图形终点（高轴）
         self.__oriImageStretchRadio = None                   #原始显示图片的缩放比例
         #外部给予的放大缩小offset
-        self.__ImageX_Offset = 0                             #与__oriImageX的偏差
-        self.__ImageY_Offset = 0
         self.__ImageStretch_Offset = 0
         self.__ImageLastValid_Offset = 0                     #最近的一次有效偏差
+        self.__MousePosX = None                              #鼠标点击框架中的位置
+        self.__MousePosY = None
         #最终绘制的图像参数
         self.__ShowImageX  = None
         self.__ShowImageY  = None
@@ -48,12 +48,11 @@ class ImageViewer(QQuickPaintedItem):
         ################################################################################
         self.sigShowReady.connect(self.show)
 
-    def setImageXOffset(self,xOffset):
-        if self.__ImageX_Offset is not xOffset:
-            self.__ImageX_Offset = xOffset
-            pass
-    def getImageXOffset(self):
-        return self.__ImageX_Offset
+    @Slot(float,float)
+    def setMousePos(self,x,y):
+        self.__MousePosX = x
+        self.__MousePosY = y
+
 
     def setImageYOffset(self,yOffset):
         if self.__ImageY_Offset is not yOffset:
@@ -71,9 +70,6 @@ class ImageViewer(QQuickPaintedItem):
             self.__ImageStretch_Offset = stretchOffset
             pass
 
-    imageX = Property(float,getImageXOffset,setImageXOffset)
-    imageY = Property(float,getImageYOffset,setImageYOffset)
-    imageStretch = Property(float,getImageStretchOffset,setImageStretchOffset)
 
     def load_init(self):
         self.__path = None
@@ -90,8 +86,6 @@ class ImageViewer(QQuickPaintedItem):
         self.__oriImageX = None
         self.__oriImageY = None
         self.__oriImageStretchRadio = None
-        self.__ImageX_Offset = 0
-        self.__ImageY_Offset = 0
         self.__ImageStretch_Offset = 0
         self.__ImageLastValid_Offset = 0
         self.__ShowImageX = None
@@ -133,9 +127,6 @@ class ImageViewer(QQuickPaintedItem):
         self.__totalFrame = num
         self.sigTotalFrame.emit(num)
         pass
-
-    totalFrame = Property(int, getTotalFrame, setTotalFrame, notify=sigTotalFrame)
-    curFrame = Property(int, getCurFrame, setCurFrame, notify=sigCurFrame)
 
     @Slot(QUrl)
     def load(self,url):
@@ -193,6 +184,9 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
             self.loadImage()
             self.conductImage()
+            # image = self.__stayRadioResize(self.__image)
+            # qimage = self.cvt_CV2QImage(image)
+            # self.__imageShow = QPixmap.fromImage(qimage)
             self.update()
 
     @Slot(int)
@@ -210,7 +204,7 @@ class ImageViewer(QQuickPaintedItem):
         framework_height = self.height()     #画版的高度
         if self.__image is None:
             return
-        image = img
+        image = img                          #原图
         image_height = image.shape[0]
         image_width  = image.shape[1]
         self.__oriImageStretchRadio = (framework_width / image_width)  if (framework_width / image_width < framework_height / image_height) else framework_width / image_height
@@ -224,10 +218,44 @@ class ImageViewer(QQuickPaintedItem):
                            fx=self.__ShowStretch,
                            fy=self.__ShowStretch,
                            interpolation=cv2.INTER_LINEAR)
-        self.__oriImageX = self.width() / 2 - resized_img.shape[1] / 2
-        self.__oriImageY = self.height() / 2 - resized_img.shape[0] / 2
-        self.__ShowImageX = self.__oriImageX + self.__ImageX_Offset
-        self.__ShowImageY = self.__oriImageY + self.__ImageY_Offset
+        if resized_img.shape[1] < framework_width or resized_img.shape[0] < framework_height:
+            #缩放尚未比原图大
+            self.__oriImageX = self.width() / 2 - resized_img.shape[1] / 2
+            self.__oriImageY = self.height() / 2 - resized_img.shape[0] / 2
+            self.__ShowImageX = self.__oriImageX
+            self.__ShowImageY = self.__oriImageY
+            pass
+        else:
+            if self.__MousePosX is None or self.__MousePosY is None:
+                raise Exception("can't enter here right now...")
+            #一旦缩放比原图任意一边大，则会进入追踪内容
+            prev_show_X = self.__ShowImageX
+            prev_show_Y = self.__ShowImageY
+            prev_show_width = self.__imageShow.width()
+            prev_show_height = self.__imageShow.height()
+            #确定鼠标当前指向的图像的位置
+            if self.__MousePosX >= prev_show_X and self.__MousePosY >= prev_show_Y:
+                #鼠标位置处于图像中
+                #step1:确定鼠标点击对应于图形的比例
+                mousePosX2ShowedImg = self.__MousePosX - prev_show_X
+                mousePosY2ShowedImg = self.__MousePosY - prev_show_Y
+                follow_width_radio  = mousePosX2ShowedImg / prev_show_width
+                follow_height_radio = mousePosY2ShowedImg / prev_show_height
+                #step2:根据比例获得缩放图像对应的像素值
+                fresh_follow_width  = resized_img.shape[1] * follow_width_radio
+                fresh_follow_height = resized_img.shape[0] * follow_height_radio
+                #step3:将此像素值平移到鼠标位置
+                gapX = resized_img.shape[1] / 2 - framework_width  / 2
+                gapY = resized_img.shape[0] / 2 - framework_height / 2
+                gapFixedX = fresh_follow_width - gapX
+                gapFixedY = fresh_follow_height - gapY
+                self.__ShowImageX = -gapX + (self.__MousePosX - gapFixedX)
+                self.__ShowImageY = -gapY + (self.__MousePosY - gapFixedY)
+            else:
+                raise Exception("can't enter here right now...")
+
+            pass
+
         return resized_img
 
     @Slot()
@@ -273,3 +301,6 @@ class ImageViewer(QQuickPaintedItem):
             raise Exception("not_right_channel....it has channel number: ",channel)
         return img
 
+    totalFrame = Property(int, getTotalFrame, setTotalFrame, notify=sigTotalFrame)
+    curFrame = Property(int, getCurFrame, setCurFrame, notify=sigCurFrame)
+    imageStretch = Property(float,getImageStretchOffset,setImageStretchOffset)

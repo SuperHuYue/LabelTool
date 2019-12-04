@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="customListview bug修复2">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -159,7 +158,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574696886808</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="fixed a bug">
+      <created>1575440450656</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1575440450656</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -172,6 +178,7 @@
     <MESSAGE value="customListview bug修复" />
     <MESSAGE value="customListview bug修复1" />
     <MESSAGE value="customListview bug修复2" />
-    <option name="LAST_COMMIT_MESSAGE" value="customListview bug修复2" />
+    <MESSAGE value="fixed a bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed a bug" />
   </component>
 </project>

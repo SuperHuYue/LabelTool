@@ -9,7 +9,6 @@ if __name__ == '__main__':
     sys_argv = sys.argv
     sys_argv += ['--style', 'default']
     app = QGuiApplication(sys_argv)
-    # qmlRegisterType(ImageViewer,"ImageViewer",1,0,"ImageViewer")
     qmlRegisterType(ImageViewerWithColorConduct,"ImageViewer",1,0,"ImageViewer")
     engine = QQmlApplicationEngine()
     engine.load(QUrl("main.qml"))
