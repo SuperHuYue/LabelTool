@@ -2,7 +2,9 @@ import QtQuick 2.13
 import QtQuick.Window 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Dialogs 1.0
+import QtQuick.Layouts 1.13
 import '../Custom'
+import '../projectRelated/projectRelatedQml'
 import ImageViewer 1.0
 
 ApplicationWindow{
@@ -15,7 +17,10 @@ ApplicationWindow{
         id:root
         anchors.fill: parent
     }
-
+    ColorRangeChoose{
+        id:lab_space_range_choose
+        modality: Qt.WindowNoState
+    }
 
     FileDialog{
         id:fileChooseDialog
@@ -51,6 +56,60 @@ ApplicationWindow{
             Action{text: qsTr('contract us')}
         }
     }
+    Rectangle{
+        id:tool_choose
+        anchors.left: menubar.right
+        anchors.leftMargin: 2
+        anchors.top: root.top
+        anchors.right: root.right
+        anchors.bottom: menubar.bottom
+        color: 'pink'
+        RowLayout{
+            anchors.fill: parent
+            RadioButton{
+                id:luv_space
+                text: qsTr("luv")
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+            }
+            RadioButton{
+                id:rgb_space
+                text: qsTr('rgb')
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+            }
+            RadioButton{
+                id:hls_space
+                text: qsTr('hls')
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+            }
+            RadioButton{
+                id:gray_space
+                text: qsTr('gray')
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+            }
+            RadioButton{
+                id:lab_space
+                text: qsTr('lab')
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+                onClicked: {
+                    lab_space_range_choose.visible = true
+                }
+            }
+            RadioButton{
+                id:others
+                text: qsTr('others')
+                checked: true
+                Layout.minimumWidth: 30
+                Layout.preferredWidth: 100
+//                Layout.fillWidth: true
+            }
+
+        }
+    }
 
     CustomListView{
         id:path_view
@@ -65,7 +124,6 @@ ApplicationWindow{
 
     }
     ImageViewer{
-//        property bool ctrl_press: false
         property double stretch_step: 0.1
         id:image_view
         z:0
@@ -129,8 +187,6 @@ ApplicationWindow{
     onSigImageViewTotalFrame: {
         imageview_totalFrame = msg
     }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

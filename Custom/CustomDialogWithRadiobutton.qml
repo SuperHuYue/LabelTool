@@ -19,8 +19,6 @@ import QtQuick.Controls 2.13
     }
 */
 
-
-
 Dialog{
     signal accepted
     signal rejected
@@ -65,16 +63,9 @@ Dialog{
        anchors.left: header.left
        anchors.right: header.right
        anchors.bottom: footer.top
-       //implicitWidth: choose_struct_dialog.width
-       //implicitHeight: choose_struct_dialog * 3 /5
        border.color: 'blue'
        radius: 2
        color: 'yellow'
-     //  Column{
-     //      id:radio_choose_columu
-     //      anchors.verticalCenter: parent.verticalCenter
-     //      anchors.horizontalCenter: parent.horizontalCenter
-     //      spacing: 2
            ListView{
                id:listview
                anchors.fill: parent
@@ -90,15 +81,6 @@ Dialog{
                    }
                }
            }
-
-    //       RadioButton{
-    //           text: 'a'
-    //       }
-    //       RadioButton{
-    //           text: 'b'
-    //       }
-    //   }
-
    }
    footer: Rectangle{
        id:footer
