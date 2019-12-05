@@ -8,4 +8,5 @@ MessageDialog{
     id:colorRangechoose
     width: 400
     height: 200
+    text: qsTr('now:pos')
 }

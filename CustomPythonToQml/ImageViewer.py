@@ -8,12 +8,13 @@ from PySide2.QtGui import QImage
 import numpy as np
 
 #用于图形显示的模块(可进行重载conductImage完成图像处理的能力)
-#信号引出sigAlert，sigCurFrame，sigTotalFrame 如需使用其功能需要在qml中进行connect
+#信号引出sigAlert，sigCurFrame，sigTotalFrame,sigPicPos 如需使用其功能需要在qml中进行connect
 #如果对当前图片进行变化（不调用重载的conductImage)---->使用update，使用show或者showtarget会调用conductImage同时重置图像位置
 class ImageViewer(QQuickPaintedItem):
     sigAlert = Signal(str) #警告信息
     sigCurFrame = Signal(int) #当前帧数报告
     sigTotalFrame = Signal(int) #总帧数报告
+    sigPicPos = Signal(int,int) #鼠标对应图片上的位置
     sigShowReady = Signal() #显示图片,该信号无需导出到QML
     def __init__(self,parent = None):
         super().__init__(parent)
@@ -65,11 +66,16 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__ShowStretch = None
         ################################################################################
-
+#调用setMousePos指令会返回当前鼠标位置信息
     @Slot(float,float)
     def setMousePos(self,x,y):
         self.__MousePosX = x
         self.__MousePosY = y
+        if self.__ShowImageX is None or self.__ShowImageY is None:
+            return
+        relative_image_posX = (self.__MousePosX - self.__ShowImageX) / self.__ShowStretch
+        relative_image_posY = (self.__MousePosY - self.__ShowImageY) / self.__ShowStretch
+        self.sigPicPos.emit(int(relative_image_posX),int(relative_image_posY))
 
 
     def setImageYOffset(self,yOffset):
@@ -279,6 +285,7 @@ class ImageViewer(QQuickPaintedItem):
             pass
 
         return resized_img
+
 
     @Slot()
     def next(self):

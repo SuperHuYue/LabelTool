@@ -144,6 +144,11 @@ ApplicationWindow{
             id:image_view_mousearea
             anchors.fill: parent
             focus: true
+            hoverEnabled: true
+            onPositionChanged: {
+                image_view.setMousePos(mouseX,mouseY)
+            }
+
             onClicked: {
                 console.log('image click...')
                 image_view.next()
@@ -173,12 +178,17 @@ ApplicationWindow{
     signal sigImageViewAlert(string msg)
     signal sigImageViewCurFrame(int msg)
     signal sigImageViewTotalFrame(int msg)
+    signal sigImageViewPicPos(int x,int y)
 //    sigCurFrame = Signal(int) #当前帧数报告
 //    sigTotalFrame = Signal(int) #总帧数报告
     Component.onCompleted: {
         image_view.sigAlert.connect(sigImageViewAlert)
         image_view.sigCurFrame.connect(sigImageViewCurFrame)
         image_view.sigTotalFrame.connect(sigImageViewTotalFrame)
+        image_view.sigPicPos.connect(sigImageViewPicPos)
+    }
+    onSigImageViewPicPos: {
+        console.log('Qml x: ',x,'y: ',y)
     }
 
     onSigImageViewCurFrame: {
