@@ -189,6 +189,7 @@ ApplicationWindow{
         yMoveable:true
 
     }
+
     ImageViewer{
         property double stretch_step: 0.1
         id:image_view
@@ -206,6 +207,44 @@ ApplicationWindow{
             z:1
         }
 
+        ScrollBar{
+            id:vBar
+            z:1
+            active: pressed
+            anchors.right: image_view.right
+            anchors.bottom: image_view.bottom
+            anchors.top: image_view.top
+            width: 10
+            visible: true
+            orientation: Qt.Vertical
+            background: Rectangle{
+                anchors.fill: parent
+                color: 'red'
+            }
+            onPositionChanged: {
+
+            }
+        }
+
+        ScrollBar{
+            id:hBar
+            z:1
+            visible: true
+            anchors.bottom: image_view.bottom
+            anchors.left: image_view.left
+            anchors.right: image_view.right
+            height: 10
+            active: pressed
+            orientation: Qt.Horizontal
+            background: Rectangle{
+                anchors.fill: parent
+                color: 'red'
+            }
+            onPositionChanged: {
+
+            }
+        }
+
         MouseArea{
             id:image_view_mousearea
             anchors.fill: parent
@@ -218,7 +257,6 @@ ApplicationWindow{
             onClicked: {
                 console.log('image click...')
                 image_view.next()
-//                image_view.setRange('lab',[0,0,140],[255,255,255]) //设置变换颜色的方法
                 image_view.show()
 
             }
@@ -234,7 +272,7 @@ ApplicationWindow{
                      }
                      image_view.update()
                  }
-                 console.log('Now ImageStretch...',image_view.imageStretch)
+//                 console.log('Now ImageStretch...',image_view.imageStretch)
                  wheel.accepted = true
              }
         }
@@ -244,16 +282,31 @@ ApplicationWindow{
     signal sigImageViewAlert(string msg)
     signal sigImageViewCurFrame(int msg)
     signal sigImageViewTotalFrame(int msg)
-    signal sigImageViewPicPos(int x,int y)
+    signal sigImageViewMouse2PicPos(int x,int y)
+    signal sigImageViewShowPicInfo(double offsetX,double offsetY,double width,double height )
 //    sigCurFrame = Signal(int) #当前帧数报告
 //    sigTotalFrame = Signal(int) #总帧数报告
     Component.onCompleted: {
         image_view.sigAlert.connect(sigImageViewAlert)
         image_view.sigCurFrame.connect(sigImageViewCurFrame)
         image_view.sigTotalFrame.connect(sigImageViewTotalFrame)
-        image_view.sigPicPos.connect(sigImageViewPicPos)
+        image_view.sigMouse2PicPos.connect(sigImageViewMouse2PicPos)
+        image_view.sigShowPicInfo.connect(sigImageViewShowPicInfo)
     }
-    onSigImageViewPicPos: {
+    onSigImageViewShowPicInfo: {
+        //此处用来设置scrollbar的信息
+        console.log("frame_width: ", image_view.width, 'image_width: ',width)
+        console.log("frame_height: ", image_view.height, 'image_height: ',height)
+        hBar.size = image_view.width / width
+        vBar.size = image_view.height / height
+        console.log('hBar size: ', hBar.size)
+        console.log('vBar size: ', vBar.size)
+        console.log('x: ',offsetX, 'y: ',offsetY)
+        vBar.position =  y / (height - image_view.height)
+        hBar.position =  x / (width - image_view.width)
+    }
+
+    onSigImageViewMouse2PicPos: {
 //        console.log('Qml x: ',x,'y: ',y)
     }
 

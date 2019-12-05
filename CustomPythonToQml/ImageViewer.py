@@ -14,7 +14,8 @@ class ImageViewer(QQuickPaintedItem):
     sigAlert = Signal(str) #警告信息
     sigCurFrame = Signal(int) #当前帧数报告
     sigTotalFrame = Signal(int) #总帧数报告
-    sigPicPos = Signal(int,int) #鼠标对应图片上的位置
+    sigMouse2PicPos = Signal(int,int) #鼠标对应图片上的位置
+    sigShowPicInfo = Signal(float,float,float,float) #展示到界面中的图像的参数(针对frame的x，y的偏移,width,height)
     sigShowReady = Signal() #显示图片,该信号无需导出到QML
     def __init__(self,parent = None):
         super().__init__(parent)
@@ -75,7 +76,7 @@ class ImageViewer(QQuickPaintedItem):
             return
         relative_image_posX = (self.__MousePosX - self.__ShowImageX) / self.__ShowStretch
         relative_image_posY = (self.__MousePosY - self.__ShowImageY) / self.__ShowStretch
-        self.sigPicPos.emit(int(relative_image_posX),int(relative_image_posY))
+        self.sigMouse2PicPos.emit(int(relative_image_posX),int(relative_image_posY))
 
 
     def setImageYOffset(self,yOffset):
@@ -308,6 +309,9 @@ class ImageViewer(QQuickPaintedItem):
                                    self.__imageShow.width(),
                                    self.__imageShow.height(),
                                    self.__imageShow)
+                print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
+                self.sigShowPicInfo.emit(self.__ShowImageX,self.__ShowImageY,
+                                         self.__imageShow.width(),self.__imageShow.height())
         else:
             self.sigAlert.emit('image is null...')
         pass
@@ -333,3 +337,4 @@ class ImageViewer(QQuickPaintedItem):
     totalFrame = Property(int, getTotalFrame, setTotalFrame, notify=sigTotalFrame)
     curFrame = Property(int, getCurFrame, setCurFrame, notify=sigCurFrame)
     imageStretch = Property(float,getImageStretchOffset,setImageStretchOffset)
+
