@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" beforeDir="false" afterPath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/projectRelated/projectRelatedpyObj/ImageViewerWithColorClassfier.py" beforeDir="false" afterPath="$PROJECT_DIR$/projectRelated/projectRelatedpyObj/ImageViewerWithColorClassfier.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -190,7 +189,14 @@
       <option name="project" value="LOCAL" />
       <updated>1575464532297</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="add 鼠标对应图像坐标输出">
+      <created>1575509638030</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1575509638030</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -207,6 +213,7 @@
     <MESSAGE value="ImageViewer加入放大缩小功能" />
     <MESSAGE value="新加入colorspace选择以及弹出界面,用于设置参数" />
     <MESSAGE value="fix a bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix a bug" />
+    <MESSAGE value="add 鼠标对应图像坐标输出" />
+    <option name="LAST_COMMIT_MESSAGE" value="add 鼠标对应图像坐标输出" />
   </component>
 </project>

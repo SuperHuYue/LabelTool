@@ -234,14 +234,14 @@ class ImageViewer(QQuickPaintedItem):
         image_height = image.shape[0]
         image_width  = image.shape[1]
         self.__oriImageStretchRadio = (framework_width / image_width)  if ((framework_width / image_width) < (framework_height / image_height)) else (framework_height / image_height)
-        print(self.__oriImageStretchRadio)
+        # print(self.__oriImageStretchRadio)
         if (self.__oriImageStretchRadio + self.__ImageStretch_Offset) < 0.01:
             self.__ShowStretch = 0.01
             self.__ImageStretch_Offset = self.__ImageLastValid_Offset
         else:
             self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
             self.__ImageLastValid_Offset = self.__ImageStretch_Offset
-        print(self.__ShowStretch)
+        # print(self.__ShowStretch)
         resized_img = cv2.resize(image, None,
                            fx=self.__ShowStretch,
                            fy=self.__ShowStretch,

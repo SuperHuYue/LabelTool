@@ -13,13 +13,43 @@ ApplicationWindow{
     width: 640
     height: 320
 
+
     Rectangle{
         id:root
         anchors.fill: parent
     }
     ColorRangeChoose{
-        id:lab_space_range_choose
-        modality: Qt.WindowNoState
+        id:space_range_choose
+        sliderName: ['lMin','lMax','aMin','aMax','bMin','bMax']
+        visible: false
+        property var space_name: 'lab'
+        x:root.width + 10
+        y:0
+        onSigmove: {
+            var pos = lab_fit_data()
+            image_view.setRange(space_name,pos[0],pos[1])
+            image_view.show()
+        }
+        function lab_fit_data(){
+            //依据slidername生成符合处理条件的数据
+            var fir = 0,sec = 0;
+            console.log('slider length: ',sliderPos.length)
+            if(sliderPos.length === 6){
+                fir = [sliderPos[0],sliderPos[2],sliderPos[4]]
+                sec = [sliderPos[1],sliderPos[3],sliderPos[5]]
+            }
+            else if(sliderPos.length == 2) //针对gray
+            {
+                fir = [sliderPos[0]]
+                sec = [sliderPos[1]]
+            }
+            else{
+                fir = [0,0,0]
+                sec = [0,0,0]
+            }
+            var final_pos = [fir,sec]
+            return final_pos
+        }
     }
 
     FileDialog{
@@ -71,24 +101,53 @@ ApplicationWindow{
                 text: qsTr("luv")
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
+                onClicked: {
+                    space_range_choose.close()
+//                    space_range_choose.visible = false 使用visible在radiobutton切换过错中会存在问题，具体原因尚且未曾遭到(到graylabel时候会出现空白)
+                    space_range_choose.space_name = "luv"
+                    space_range_choose.sliderName = ['lMin','lMax','uMin','uMax','vMin','vMax']
+                    space_range_choose.show()
+                }
+
             }
             RadioButton{
                 id:rgb_space
                 text: qsTr('rgb')
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
+                onClicked: {
+                    space_range_choose.close()
+//                    space_range_choose.visible = false
+                    space_range_choose.space_name = "rgb"
+                    space_range_choose.sliderName = ['bMin','bMax','gMin','gMax','rMin','rMax']
+                    space_range_choose.show()
+                }
             }
             RadioButton{
                 id:hls_space
                 text: qsTr('hls')
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
+                onClicked: {
+                    space_range_choose.close()
+//                    space_range_choose.visible = false
+                    space_range_choose.space_name = 'hls'
+                    space_range_choose.sliderName = ['hMin','hMax','lMin','lMax','sMin','sMax']
+                    space_range_choose.show()
+                }
             }
             RadioButton{
                 id:gray_space
                 text: qsTr('gray')
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
+                onClicked: {
+                    space_range_choose.close()
+//                    space_range_choose.visible = false
+                    space_range_choose.space_name = 'gray'
+                    space_range_choose.sliderName = ['Min','Max']
+                    space_range_choose.show()
+                }
             }
             RadioButton{
                 id:lab_space
@@ -96,7 +155,11 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    lab_space_range_choose.visible = true
+                    space_range_choose.close()
+//                    space_range_choose.visible = false
+                    space_range_choose.space_name = 'lab'
+                    space_range_choose.sliderName = ['lMin','lMax','aMin','aMax','bMin','bMax']
+                    space_range_choose.show()
                 }
             }
             RadioButton{
@@ -105,7 +168,10 @@ ApplicationWindow{
                 checked: true
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
-//                Layout.fillWidth: true
+                onClicked: {
+                    space_range_choose.visible = false
+                }
+
             }
 
         }
@@ -188,7 +254,7 @@ ApplicationWindow{
         image_view.sigPicPos.connect(sigImageViewPicPos)
     }
     onSigImageViewPicPos: {
-        console.log('Qml x: ',x,'y: ',y)
+//        console.log('Qml x: ',x,'y: ',y)
     }
 
     onSigImageViewCurFrame: {
