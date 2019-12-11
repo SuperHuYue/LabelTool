@@ -251,7 +251,7 @@ ApplicationWindow{
             focus: true
             hoverEnabled: true
             onPositionChanged: {
-                image_view.setMousePos(mouseX,mouseY)
+                //image_view.setMousePos(mouseX,mouseY)
             }
 
             onClicked: {
