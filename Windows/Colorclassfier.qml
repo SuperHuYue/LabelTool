@@ -10,6 +10,7 @@ import ImageViewer 1.0
 ApplicationWindow{
     property int imageview_curFrame: 0
     property int imageview_totalFrame: 0
+
     width: 640
     height: 320
 
@@ -207,68 +208,84 @@ ApplicationWindow{
             z:1
         }
 
+
+        CustomScrollBar{
+            id:upScrollBar
+            z:1
+            anchors.top: image_view.top
+            anchors.left: image_view.left
+            anchors.right: image_view.right
+            height:10
+            state:"horizental"
+            onPositionchange: {
+                console.log(pos)
+            }
+        }
+//如下两种用法均可以达到相同的效果
+        CustomScrollBar{
+            id:leftScrollBar
+            z:1
+            anchors.left: path_view.right
+            anchors.top: image_view.top
+            anchors.bottom: image_view.bottom
+            width: 10
+            state: "vertical"
+            onPositionchange: {
+                console.log(pos)
+            }
+        }
+
         ScrollBar{
             id:vBar
             z:1
-            active: pressed
+            policy: ScrollBar.AlwaysOn
             anchors.right: image_view.right
             anchors.bottom: image_view.bottom
             anchors.top: image_view.top
             width: 10
-            visible: true
             orientation: Qt.Vertical
-            background: Rectangle{
-                anchors.fill: parent
-                color: 'red'
-            }
-            onPositionChanged: {
-
+            contentItem.onYChanged : {
+                console.log('content: ',contentItem.y)
             }
         }
+//end
 
         ScrollBar{
             id:hBar
             z:1
-            visible: true
             anchors.bottom: image_view.bottom
             anchors.left: image_view.left
             anchors.right: image_view.right
             height: 10
-            active: pressed
+            policy: ScrollBar.AlwaysOn
             orientation: Qt.Horizontal
-            background: Rectangle{
-                anchors.fill: parent
-                color: 'red'
-            }
-            onPositionChanged: {
-
+            onXChanged: {
+                console.log('hBar: ',x)
             }
         }
 
         MouseArea{
+            z:0
             id:image_view_mousearea
             anchors.fill: parent
             focus: true
             hoverEnabled: true
-            onPositionChanged: {
-                //image_view.setMousePos(mouseX,mouseY)
-            }
-
+            propagateComposedEvents: true
             onClicked: {
-                console.log('image click...')
-                image_view.next()
-                image_view.show()
+              //  console.log('image click...')
+              //  image_view.next()
+              //  image_view.show()
+              //  mouse.accept = false
 
             }
              onWheel: {
-                 console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
+                 //console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
                  if(wheel.modifiers &Qt.ControlModifier){
-                     image_view.setMousePos(wheel.x,wheel.y)
                      if(wheel.angleDelta.y < 0){ //缩小
-                             image_view.imageStretch = image_view.imageStretch - 0.1
+                         image_view.shrink(wheel.x,wheel.y)
                      }
                      else{  					//放大
-                         image_view.imageStretch = image_view.imageStretch + 0.1
+                         image_view.dilate(wheel.x,wheel.y)
                      }
                      image_view.update()
                  }
@@ -283,7 +300,8 @@ ApplicationWindow{
     signal sigImageViewCurFrame(int msg)
     signal sigImageViewTotalFrame(int msg)
     signal sigImageViewMouse2PicPos(int x,int y)
-    signal sigImageViewShowPicInfo(double offsetX,double offsetY,double width,double height )
+    signal sigImageViewShowPicInfo(double hScrollSize,double vScrollSize,double hpos,double vpos )
+
 //    sigCurFrame = Signal(int) #当前帧数报告
 //    sigTotalFrame = Signal(int) #总帧数报告
     Component.onCompleted: {
@@ -294,16 +312,29 @@ ApplicationWindow{
         image_view.sigShowPicInfo.connect(sigImageViewShowPicInfo)
     }
     onSigImageViewShowPicInfo: {
-        //此处用来设置scrollbar的信息
-        console.log("frame_width: ", image_view.width, 'image_width: ',width)
-        console.log("frame_height: ", image_view.height, 'image_height: ',height)
-        hBar.size = image_view.width / width
-        vBar.size = image_view.height / height
-        console.log('hBar size: ', hBar.size)
-        console.log('vBar size: ', vBar.size)
-        console.log('x: ',offsetX, 'y: ',offsetY)
-        vBar.position =  y / (height - image_view.height)
-        hBar.position =  x / (width - image_view.width)
+        console.log('hSize: ',hScrollSize,'vSize: ',vScrollSize,'hPos: ', hpos, 'vpos:' , vpos)
+        upScrollBar.size = hScrollSize
+        upScrollBar.position = hpos
+        upScrollBar.update()
+        leftScrollBar.size = vScrollSize
+        leftScrollBar.position = vpos
+        leftScrollBar.update()
+        hBar.size = hScrollSize
+        vBar.size = vScrollSize
+        hBar.position = hpos
+        vBar.position = vpos
+        vBar.update()
+        hBar.update()
+//        //此处用来设置scrollbar的信息
+//        console.log("frame_width: ", image_view.width, 'image_width: ',width)
+//        console.log("frame_height: ", image_view.height, 'image_height: ',height)
+//        hBar.size = image_view.width / width
+//        vBar.size = image_view.height / height
+//        console.log('hBar size: ', hBar.size)
+//        console.log('vBar size: ', vBar.size)
+//        console.log('x: ',offsetX, 'y: ',offsetY)
+//        vBar.position =  y / (height - image_view.height)
+//        hBar.position =  x / (width - image_view.width)
     }
 
     onSigImageViewMouse2PicPos: {

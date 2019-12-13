@@ -12,6 +12,7 @@ if __name__ == '__main__':
     qmlRegisterType(ImageViewerWithColorConduct,"ImageViewer",1,0,"ImageViewer")
     engine = QQmlApplicationEngine()
     engine.load(QUrl("main.qml"))
+    #engine.load(QUrl("test.qml"))
     
     if not engine.rootObjects():
         sys.exit(-1)

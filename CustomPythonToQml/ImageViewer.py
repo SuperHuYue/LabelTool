@@ -49,8 +49,12 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Pic = None
         self.__MousePosX2Frame = None
         self.__MousePosY2Frame = None
+        self.__ShowNextReady = True                          #控制显示同步
+        self.__StretchStep = 0.05
         ################################################################################
         self.sigShowReady.connect(self.show)
+
+
 
     def show_Init(self):
         ################################################################################
@@ -70,61 +74,10 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Pic = None
         self.__MousePosX2Frame = None
         self.__MousePosY2Frame = None
+        self.__ShowNextReady = True
+        self.__StretchStep = 0.05
         pass
         ################################################################################
-#调用setMousePos指令会返回当前鼠标位置信息
-    @Slot(float,float)
-    def setMousePos(self,x,y):
-        self.__MousePosX = x
-        self.__MousePosY = y
-        if self.__ShowImageX is None or self.__ShowImageY is None:
-            return
-        frame_width = self.width()
-        frame_height = self.height()
-
-        if self.__MousePosX > self.__ShowImageX and self.__MousePosY > self.__ShowImageY:
-            #click pos in the picture
-            self.__MousePosX2Frame = self.__MousePosX / frame_width
-            self.__MousePosY2Frame = self.__MousePosY / frame_height
-            picPosX = self.__MousePosX - self.__ShowImageX
-            picPosY = self.__MousePosY - self.__ShowImageY
-            self.__MousePosX2Pic = picPosX / self.__imageShow.width()
-            self.__MousePosY2Pic = picPosY / self.__imageShow.height()
-            pass
-        else:
-            #click pos not in the picture
-            pass
-        #设置图像大小
-      #  relative_image_posX = (self.__MousePosX - self.__ShowImageX) / self.__ShowStretch
-      #  relative_image_posY = (self.__MousePosY - self.__ShowImageY) / self.__ShowStretch
-      #  self.sigMouse2PicPos.emit(int(relative_image_posX),int(relative_image_posY))
-
-
-#设置x轴偏移量
-    @Slot(float)
-    def setOriImageXOffset (self,x):
-        self.__OriImageXOffset = x
-        pass
-
-#设置y轴偏移量
-    @Slot(float)
-    def setOriImageYOffset (self,y):
-        self.__OriImageYOffset = y
-        pass
-
-    def setOriImageStretchOffset(self,stretchOffset):
-        if self.__OriImageStretch is None or self.__image is None:
-            return
-        #self.__OriImageStretchOffset =  stretchOffset
-        resized_width = self.__image.shape[1] * (self.__OriImageStretch + stretchOffset)
-        resized_height = self.__image.shape[0] * (self.__OriImageStretch + stretchOffset)
-        if resized_width <= 30 or resized_height <= 30:
-            pass
-        else:
-            self.__ShowImageStretch = self.__OriImageStretch + stretchOffset
-            self.__OriImageStretchOffset = stretchOffset
-    def getOriImageStretchOffset(self):
-        return self.__OriImageStretchOffset
 
 
 
@@ -157,6 +110,9 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Pic = None
         self.__MousePosX2Frame = None
         self.__MousePosY2Frame = None
+        self.__ShowNextReady = True
+        self.__StretchStep = 0.05
+
 
     @staticmethod
     def videoFeedContainer(Obj):#Obj image_viewer本身
@@ -245,6 +201,7 @@ class ImageViewer(QQuickPaintedItem):
         resized_img_height = image_height * self.__ShowImageStretch
         self.__OriImageX = framework_width / 2 - resized_img_width / 2
         self.__OriImageY = framework_height / 2 - resized_img_height / 2
+        self.__stayRadioResize()
         return self.__image
 
     def setImage(self,img):
@@ -264,104 +221,134 @@ class ImageViewer(QQuickPaintedItem):
         if self.getLoadReady() is True:
             self.loadImage()
             self.conductImage()
-            # image = self.__stayRadioResize(self.__image)
-            # qimage = self.cvt_CV2QImage(image)
-            # self.__imageShow = QPixmap.fromImage(qimage)
             self.update()
 
     @Slot(int)
     def target_show(self,num):
         self.setCurFrame(num)
         if self.getLoadReady() is True:
-         #self.show_Init()
          self.loadImage()
          self.conductImage()
          self.update()
         pass
 
+
+    def setShowControl(self):
+        self.__ShowNextReady = False
+
+    def releaseShowControl(self):
+        self.__ShowNextReady = True
+
+    #调用setMousePos指令会返回当前鼠标位置信息
+    @Slot(float,float)
+    def dilate(self,x,y):
+        if self.__ShowNextReady is False:
+            return
+        self.setShowControl()
+        self.setOriImageStretchOffset(self.__StretchStep)
+        self.__MousePosX = x
+        self.__MousePosY = y
+        if self.__ShowImageX is None or self.__ShowImageY is None:
+            return
+        frame_width = self.width()
+        frame_height = self.height()
+
+        if self.__MousePosX > self.__ShowImageX and self.__MousePosY > self.__ShowImageY:
+            #click pos in the picture
+            self.__MousePosX2Frame = self.__MousePosX / frame_width
+            self.__MousePosY2Frame = self.__MousePosY / frame_height
+            picPosX = self.__MousePosX - self.__ShowImageX
+            picPosY = self.__MousePosY - self.__ShowImageY
+            self.__MousePosX2Pic = picPosX / self.__imageShow.width()
+            self.__MousePosY2Pic = picPosY / self.__imageShow.height()
+            pass
+        else:
+            #click pos not in the picture  self.__MousePosX2Frame = None
+            pass
+        self.__stayRadioResize()
+
+    @Slot(float,float)
+    def shrink(self,x,y):
+        if self.__ShowNextReady is False:
+            return
+        self.setShowControl()
+        self.setOriImageStretchOffset( - self.__StretchStep)
+        self.__MousePosX = x
+        self.__MousePosY = y
+        if self.__ShowImageX is None or self.__ShowImageY is None:
+            return
+        frame_width = self.width()
+        frame_height = self.height()
+
+        if self.__MousePosX > self.__ShowImageX and self.__MousePosY > self.__ShowImageY:
+            #click pos in the picture
+            self.__MousePosX2Frame = self.__MousePosX / frame_width
+            self.__MousePosY2Frame = self.__MousePosY / frame_height
+            picPosX = self.__MousePosX - self.__ShowImageX
+            picPosY = self.__MousePosY - self.__ShowImageY
+            self.__MousePosX2Pic = picPosX / self.__imageShow.width()
+            self.__MousePosY2Pic = picPosY / self.__imageShow.height()
+            pass
+        else:
+            #click pos not in the picture
+            pass
+        self.__stayRadioResize()
+
+    #设置x轴偏移量
+    @Slot(float)
+    def setOriImageXOffset (self,x):
+        self.__OriImageXOffset = x
+        pass
+
+    #设置y轴偏移量
+    @Slot(float)
+    def setOriImageYOffset (self,y):
+        self.__OriImageYOffset = y
+        pass
+
+    def setOriImageStretchOffset(self,stretchOffset):
+        if self.__OriImageStretch is None or self.__image is None:
+            return
+        #self.__OriImageStretchOffset =  stretchOffset
+        resized_width = self.__image.shape[1] * (self.__ShowImageStretch + stretchOffset)
+        resized_height = self.__image.shape[0] * (self.__ShowImageStretch + stretchOffset)
+        if resized_width <= 30 or resized_height <= 30:
+            pass
+        else:
+            self.__ShowImageStretch = self.__ShowImageStretch + stretchOffset
+
+
+   # def getOriImageStretchOffset(self):
+   #     return self.__OriImageStretchOffset
+
     #缩放控制,确定图片在显示中的位置
     def __stayRadioResize(self):
         if (self.__image is None or self.__ShowImageStretch is None):
             return None
-        resized_img = cv2.resize(self.__image,None,
-                                 fx= self.__ShowImageStretch,
-                                 fy= self.__ShowImageStretch,
-                                 interpolation=cv2.INTER_LINEAR)
-        print(self.__MousePosX2Pic,self.__MousePosY2Pic,self.__MousePosX2Frame,self.__MousePosY2Frame)
+        #print(self.__MousePosX2Pic,self.__MousePosY2Pic,self.__MousePosX2Frame,self.__MousePosY2Frame)
         if self.__MousePosX2Pic is None or self.__MousePosY2Pic is None or \
            self.__MousePosX2Frame is None or self.__MousePosY2Frame is None:
-            print('wops')
+            #print('wops')
             self.__ShowImageX = self.__OriImageX
             self.__ShowImageY = self.__OriImageY
             pass
         else:
-            print('enter this...')
+            #print('enter this...')
             framework_width = self.width()      #画版的宽度
             framework_height = self.height()     #画版的高度
-            alignXinImg = self.__image.shape[1] * self.__ShowImageStretch * self.__MousePosX2Pic
-            alignYinImg = self.__image.shape[0] * self.__ShowImageStretch * self.__MousePosY2Pic
-            alignXinFrame = framework_width * self.__MousePosX2Frame
-            alignYinFrame = framework_height * self.__MousePosY2Frame
-            self.__ShowImageX = alignXinFrame - alignXinImg
-            self.__ShowImageY = alignYinFrame - alignYinImg
+            image_width = self.__image.shape[1] * self.__ShowImageStretch
+            image_height = self.__image.shape[0] * self.__ShowImageStretch
+            if image_width <= framework_width or image_height <= framework_height or self.__ShowImageX > 0 or self.__ShowImageY > 0:
+                self.__ShowImageX = (framework_width - image_width) / 2
+                self.__ShowImageY = (framework_height - image_height) / 2
+            else:
+                alignXinImg = self.__image.shape[1] * self.__ShowImageStretch * self.__MousePosX2Pic
+                alignYinImg = self.__image.shape[0] * self.__ShowImageStretch * self.__MousePosY2Pic
+                alignXinFrame = framework_width * self.__MousePosX2Frame
+                alignYinFrame = framework_height * self.__MousePosY2Frame
+                self.__ShowImageX = alignXinFrame - alignXinImg
+                self.__ShowImageY = alignYinFrame - alignYinImg
 
-        return resized_img
-     #   if self.__image is None:
-     #       return
-     #   image = img                          #原图
-     #   image_height = image.shape[0]
-     #   image_width  = image.shape[1]
-     #   self.__oriImageStretchRadio = (framework_width / image_width)  if ((framework_width / image_width) < (framework_height / image_height)) else (framework_height / image_height)
-     #   # print(self.__oriImageStretchRadio)
-     #   if (self.__oriImageStretchRadio + self.__ImageStretch_Offset) < 0.01:
-     #       self.__ShowStretch = 0.01
-     #       self.__ImageStretch_Offset = self.__ImageLastValid_Offset
-     #   else:
-     #       self.__ShowStretch = self.__oriImageStretchRadio + self.__ImageStretch_Offset
-     #       self.__ImageLastValid_Offset = self.__ImageStretch_Offset
-     #   # print(self.__ShowStretch)
-     #   resized_img = cv2.resize(image, None,
-     #                      fx=self.__ShowStretch,
-     #                      fy=self.__ShowStretch,
-     #                      interpolation=cv2.INTER_LINEAR)
-     #   if resized_img.shape[1] < framework_width or resized_img.shape[0] < framework_height:
-     #       #缩放尚未比原图大
-     #       self.__oriImageX = self.width() / 2 - resized_img.shape[1] / 2
-     #       self.__oriImageY = self.height() / 2 - resized_img.shape[0] / 2
-     #       pass
-     #   else:
-     #       if self.__MousePosX is None or self.__MousePosY is None:
-     #           raise Exception("can't enter here right now...")
-     #       #一旦缩放比原图任意一边大，则会进入追踪内容
-     #       prev_show_X = self.__ShowImageX
-     #       prev_show_Y = self.__ShowImageY
-     #       prev_show_width = self.__imageShow.width()
-     #       prev_show_height = self.__imageShow.height()
-     #       #确定鼠标当前指向的图像的位置
-     #       if self.__MousePosX >= prev_show_X and self.__MousePosY >= prev_show_Y:
-     #           #鼠标位置处于图像中
-     #           #step1:确定鼠标点击对应于图形的比例
-     #           mousePosX2ShowedImg = self.__MousePosX - prev_show_X
-     #           mousePosY2ShowedImg = self.__MousePosY - prev_show_Y
-     #           follow_width_radio  = mousePosX2ShowedImg / prev_show_width
-     #           follow_height_radio = mousePosY2ShowedImg / prev_show_height
-     #           #step2:根据比例获得缩放图像对应的像素值
-     #           fresh_follow_width  = resized_img.shape[1] * follow_width_radio
-     #           fresh_follow_height = resized_img.shape[0] * follow_height_radio
-     #           #step3:将此像素值平移到鼠标位置
-     #           gapX = resized_img.shape[1] / 2 - framework_width  / 2
-     #           gapY = resized_img.shape[0] / 2 - framework_height / 2
-     #           gapFixedX = fresh_follow_width - gapX
-     #           gapFixedY = fresh_follow_height - gapY
-     #           self.__ShowImageX = -gapX + (self.__MousePosX - gapFixedX)
-     #           self.__ShowImageY = -gapY + (self.__MousePosY - gapFixedY)
-     #           print('enter it')
-     #       else:
-     #           raise Exception("can't enter here right now...")
-
-     #       pass
-
-     #   return resized_img
 
 
     @Slot()
@@ -374,9 +361,12 @@ class ImageViewer(QQuickPaintedItem):
     def paint(self, painter):
         if painter is None:
             raise Exception("painter None Exception...")
-        image = self.__stayRadioResize()
-        if image is None:
+        if self.__image is None:
             return
+        image = cv2.resize(self.__image,None,
+                                 fx= self.__ShowImageStretch,
+                                 fy= self.__ShowImageStretch,
+                                 interpolation=cv2.INTER_LINEAR)
         qimage = self.cvt_CV2QImage(image)
         self.__imageShow = QPixmap.fromImage(qimage)
         if self.__imageShow.isNull() is not True:
@@ -385,9 +375,24 @@ class ImageViewer(QQuickPaintedItem):
                                    self.__imageShow.width(),
                                    self.__imageShow.height(),
                                    self.__imageShow)
-                print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
-                self.sigShowPicInfo.emit(self.__ShowImageX,self.__ShowImageY,
-                                         self.__imageShow.width(),self.__imageShow.height())
+                #print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
+                self.releaseShowControl()
+                hScroll_size = min(self.width() / self.__imageShow.width(),1)
+                vScroll_size = min(self.height() / self.__imageShow.height(),1)
+                hPos_mediate = abs(self.__ShowImageX /(self.__imageShow.width() - self.width())) if self.__ShowImageX<0 else 0
+                vPos_mediate = abs(self.__ShowImageY / (self.__imageShow.height() - self.height())) if self.__ShowImageY < 0 else 0
+                hPos = (hPos_mediate *((1 - hScroll_size) * self.width())) / self.width()
+                vPos = (vPos_mediate * ((1 - vScroll_size)* self.height())) / self.height()
+                #hPos = min(abs((self.__ShowImageX) / (self.__imageShow.width() - self.width() - hScroll_size)),1)
+                #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
+
+                self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
+                                         hPos,vPos)
+                print("hScroll_size: ", hScroll_size, "vScroll_size: ",vScroll_size,'hpos: ',hPos,'vpos: ',vPos)
+                if self.__ShowImageX > 0 or self.__ShowImageY > 0:
+                    #raise Exception('Not nice ImageX...')
+                    pass
+
         else:
             self.sigAlert.emit('image is null...')
         pass
@@ -412,5 +417,4 @@ class ImageViewer(QQuickPaintedItem):
 
     totalFrame = Property(int, getTotalFrame, setTotalFrame, notify=sigTotalFrame)
     curFrame = Property(int, getCurFrame, setCurFrame, notify=sigCurFrame)
-    imageStretch = Property(float,getOriImageStretchOffset,setOriImageStretchOffset)
 
