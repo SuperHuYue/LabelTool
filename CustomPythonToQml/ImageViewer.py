@@ -38,8 +38,8 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-        self.__OriImageXOffset = 0
-        self.__OriImageYOffset = 0
+       # self.__OriImageXOffset = 0
+       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
@@ -51,6 +51,8 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Frame = None
         self.__ShowNextReady = True                          #控制显示同步
         self.__StretchStep = 0.05
+        self.__hScrollSize = None                            #0.0~1.0
+        self.__vScrollSize = None                            #0.0~1.0
         ################################################################################
         self.sigShowReady.connect(self.show)
 
@@ -63,8 +65,8 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-        self.__OriImageXOffset = 0
-        self.__OriImageYOffset = 0
+       # self.__OriImageXOffset = 0
+       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
@@ -76,6 +78,8 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Frame = None
         self.__ShowNextReady = True
         self.__StretchStep = 0.05
+        self.__hScrollSize = None
+        self.__vScrollSize = None
         pass
         ################################################################################
 
@@ -99,8 +103,8 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-        self.__OriImageXOffset = 0
-        self.__OriImageYOffset = 0
+       # self.__OriImageXOffset = 0
+       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
@@ -112,6 +116,32 @@ class ImageViewer(QQuickPaintedItem):
         self.__MousePosY2Frame = None
         self.__ShowNextReady = True
         self.__StretchStep = 0.05
+        self.__hScrollSize = None
+        self.__vScrollSize = None
+
+    @Slot(float)
+    def setHorizentalPos(self,pos):
+        if self.__ShowImageX is None or self.__ShowImageY is None or self.__imageShow is None \
+            or self.__image is None or self.__hScrollSize is None:
+            return
+        if self.__ShowNextReady is False:
+            return
+        self.setShowControl()
+        self.__ShowImageX = -(pos) * ((self.__imageShow.width() - self.width()) / (self.width() *(1 - self.__hScrollSize)))
+        self.update()
+
+
+
+    @Slot(float)
+    def setVerticalPos(self,pos):
+        if self.__ShowImageX is None or self.__ShowImageY is None or self.__imageShow is None \
+                or self.__image is None or self.__vScrollSize is None:
+            return
+        if self.__ShowNextReady is False:
+            return
+        self.setShowControl()
+        self.__ShowImageY = -(pos) * ((self.__imageShow.height() - self.height()) / (self.height()*(1 - self.__vScrollSize)))
+        self.update()
 
 
     @staticmethod
@@ -294,17 +324,17 @@ class ImageViewer(QQuickPaintedItem):
             pass
         self.__stayRadioResize()
 
-    #设置x轴偏移量
-    @Slot(float)
-    def setOriImageXOffset (self,x):
-        self.__OriImageXOffset = x
-        pass
+   # #设置x轴偏移量
+   # @Slot(float)
+   # def setOriImageXOffset (self,x):
+   #     self.__OriImageXOffset = x
+   #     pass
 
-    #设置y轴偏移量
-    @Slot(float)
-    def setOriImageYOffset (self,y):
-        self.__OriImageYOffset = y
-        pass
+   # #设置y轴偏移量
+   # @Slot(float)
+   # def setOriImageYOffset (self,y):
+   #     self.__OriImageYOffset = y
+   #     pass
 
     def setOriImageStretchOffset(self,stretchOffset):
         if self.__OriImageStretch is None or self.__image is None:
@@ -350,6 +380,20 @@ class ImageViewer(QQuickPaintedItem):
                 self.__ShowImageY = alignYinFrame - alignYinImg
 
 
+            hScroll_size = min(self.width() / self.__imageShow.width(),1)
+            vScroll_size = min(self.height() / self.__imageShow.height(),1)
+            hPos_mediate = abs(self.__ShowImageX /(self.__imageShow.width() - self.width()+ 1e-19)) if self.__ShowImageX<0 else 0
+            vPos_mediate = abs(self.__ShowImageY / (self.__imageShow.height() - self.height() + 1e-19)) if self.__ShowImageY < 0 else 0
+            hPos = (hPos_mediate *((1 - hScroll_size) * self.width())) / self.width()
+            vPos = (vPos_mediate * ((1 - vScroll_size)* self.height())) / self.height()
+            self.__vScrollSize = vScroll_size
+            self.__hScrollSize = hScroll_size
+            #hPos = min(abs((self.__ShowImageX) / (self.__imageShow.width() - self.width() - hScroll_size)),1)
+            #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
+            self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
+                                     hPos,vPos)
+
+
 
     @Slot()
     def next(self):
@@ -377,18 +421,20 @@ class ImageViewer(QQuickPaintedItem):
                                    self.__imageShow)
                 #print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
                 self.releaseShowControl()
-                hScroll_size = min(self.width() / self.__imageShow.width(),1)
-                vScroll_size = min(self.height() / self.__imageShow.height(),1)
-                hPos_mediate = abs(self.__ShowImageX /(self.__imageShow.width() - self.width())) if self.__ShowImageX<0 else 0
-                vPos_mediate = abs(self.__ShowImageY / (self.__imageShow.height() - self.height())) if self.__ShowImageY < 0 else 0
-                hPos = (hPos_mediate *((1 - hScroll_size) * self.width())) / self.width()
-                vPos = (vPos_mediate * ((1 - vScroll_size)* self.height())) / self.height()
+              #  hScroll_size = min(self.width() / self.__imageShow.width(),1)
+              #  vScroll_size = min(self.height() / self.__imageShow.height(),1)
+              #  hPos_mediate = abs(self.__ShowImageX /(self.__imageShow.width() - self.width())) if self.__ShowImageX<0 else 0
+              #  vPos_mediate = abs(self.__ShowImageY / (self.__imageShow.height() - self.height())) if self.__ShowImageY < 0 else 0
+              #  hPos = (hPos_mediate *((1 - hScroll_size) * self.width())) / self.width()
+              #  vPos = (vPos_mediate * ((1 - vScroll_size)* self.height())) / self.height()
                 #hPos = min(abs((self.__ShowImageX) / (self.__imageShow.width() - self.width() - hScroll_size)),1)
                 #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
-
-                self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
-                                         hPos,vPos)
-                print("hScroll_size: ", hScroll_size, "vScroll_size: ",vScroll_size,'hpos: ',hPos,'vpos: ',vPos)
+              #  if self.__SetPosLabel is False:
+              #      self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
+              #                               hPos,vPos)
+              #  else:
+              #      self.__SetPosLabel = False
+              #      print("hScroll_size: ", hScroll_size, "vScroll_size: ",vScroll_size,'hpos: ',hPos,'vpos: ',vPos)
                 if self.__ShowImageX > 0 or self.__ShowImageY > 0:
                     #raise Exception('Not nice ImageX...')
                     pass

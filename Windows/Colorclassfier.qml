@@ -219,6 +219,7 @@ ApplicationWindow{
             state:"horizental"
             onPositionchange: {
                 console.log(pos)
+                image_view.setHorizentalPos(pos)
             }
         }
 //如下两种用法均可以达到相同的效果
@@ -232,6 +233,7 @@ ApplicationWindow{
             state: "vertical"
             onPositionchange: {
                 console.log(pos)
+                image_view.setVerticalPos(pos)
             }
         }
 
@@ -272,6 +274,7 @@ ApplicationWindow{
             hoverEnabled: true
             propagateComposedEvents: true
             onClicked: {
+              //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
               //  image_view.show()
