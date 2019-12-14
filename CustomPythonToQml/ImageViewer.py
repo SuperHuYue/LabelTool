@@ -7,7 +7,7 @@ from PySide2.QtQuick import QQuickPaintedItem
 from PySide2.QtGui import QImage
 import numpy as np
 
-#用于图形显示的模块(可进行重载conductImage完成图像处理的能力)
+#用于图形显示的模块(可进行重载conductImage完成图像处理的能力,在使用ConductImage的过程中不允许对图形比例进行放缩)
 #信号引出sigAlert，sigCurFrame，sigTotalFrame,sigPicPos 如需使用其功能需要在qml中进行connect
 #如果对当前图片进行变化（不调用重载的conductImage)---->使用update，使用show或者showtarget会调用conductImage同时重置图像位置
 class ImageViewer(QQuickPaintedItem):
@@ -21,11 +21,9 @@ class ImageViewer(QQuickPaintedItem):
         super().__init__(parent)
         self.__path = None                                   #当前处理图像路径
         self.__imageShow = QPixmap()                         #当前显示图像位图
-        self.__image = None                                  #opencv中读取的内容(原图,中间处理内容不允许保存在此类中)
+        self.__image = None
         # self.__percentage = None                           #当前图像加载/处理进度
         self.__type = None                                   #图像类型,视频还是图片
-        self.__imageWidth = None                             #载入图像宽度
-        self.__imageHeight = None                            #载入图像高度
         self.__SupportImageType = ['jpg','png']                #支持的图片类型
         self.__SupportVideoType = ['mp4']                    #支持的视频类型
         self.__imageContainer = dict()                       #用于保存图形设备.图像内容统一从这里读取
@@ -38,12 +36,9 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-       # self.__OriImageXOffset = 0
-       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
-        self.__OriImageStretchOffset = 0
 
         self.__MousePosX2Pic = None
         self.__MousePosY2Pic = None
@@ -65,12 +60,9 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-       # self.__OriImageXOffset = 0
-       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
-        self.__OriImageStretchOffset = 0
 
         self.__MousePosX2Pic = None
         self.__MousePosY2Pic = None
@@ -91,8 +83,6 @@ class ImageViewer(QQuickPaintedItem):
         self.__sourceImage = None
         self.__image = None
         self.__type = None
-        self.__imageHeight = None
-        self.__imageWidth = None
         self.__imageContainer = dict()
         self.__curFrame = 0
         self.__totalFrame = 0
@@ -103,12 +93,9 @@ class ImageViewer(QQuickPaintedItem):
         self.__ShowImageY = None
         self.__OriImageX = None
         self.__OriImageY = None
-       # self.__OriImageXOffset = 0
-       # self.__OriImageYOffset = 0
 
         self.__ShowImageStretch = None
         self.__OriImageStretch = None
-        self.__OriImageStretchOffset = 0
 
         self.__MousePosX2Pic = None
         self.__MousePosY2Pic = None
@@ -128,6 +115,13 @@ class ImageViewer(QQuickPaintedItem):
             return
         self.setShowControl()
         self.__ShowImageX = -(pos) * ((self.__imageShow.width() - self.width()) / (self.width() *(1 - self.__hScrollSize)))
+
+        image = cv2.resize(self.__image,None,
+                           fx= self.__ShowImageStretch,
+                           fy= self.__ShowImageStretch,
+                           interpolation=cv2.INTER_LINEAR)
+        qimage = self.cvt_CV2QImage(image)
+        self.__imageShow = QPixmap.fromImage(qimage)
         self.update()
 
 
@@ -141,6 +135,13 @@ class ImageViewer(QQuickPaintedItem):
             return
         self.setShowControl()
         self.__ShowImageY = -(pos) * ((self.__imageShow.height() - self.height()) / (self.height()*(1 - self.__vScrollSize)))
+
+        image = cv2.resize(self.__image,None,
+                           fx= self.__ShowImageStretch,
+                           fy= self.__ShowImageStretch,
+                           interpolation=cv2.INTER_LINEAR)
+        qimage = self.cvt_CV2QImage(image)
+        self.__imageShow = QPixmap.fromImage(qimage)
         self.update()
 
 
@@ -324,22 +325,9 @@ class ImageViewer(QQuickPaintedItem):
             pass
         self.__stayRadioResize()
 
-   # #设置x轴偏移量
-   # @Slot(float)
-   # def setOriImageXOffset (self,x):
-   #     self.__OriImageXOffset = x
-   #     pass
-
-   # #设置y轴偏移量
-   # @Slot(float)
-   # def setOriImageYOffset (self,y):
-   #     self.__OriImageYOffset = y
-   #     pass
-
     def setOriImageStretchOffset(self,stretchOffset):
         if self.__OriImageStretch is None or self.__image is None:
             return
-        #self.__OriImageStretchOffset =  stretchOffset
         resized_width = self.__image.shape[1] * (self.__ShowImageStretch + stretchOffset)
         resized_height = self.__image.shape[0] * (self.__ShowImageStretch + stretchOffset)
         if resized_width <= 30 or resized_height <= 30:
@@ -348,8 +336,6 @@ class ImageViewer(QQuickPaintedItem):
             self.__ShowImageStretch = self.__ShowImageStretch + stretchOffset
 
 
-   # def getOriImageStretchOffset(self):
-   #     return self.__OriImageStretchOffset
 
     #缩放控制,确定图片在显示中的位置
     def __stayRadioResize(self):
@@ -392,7 +378,12 @@ class ImageViewer(QQuickPaintedItem):
             #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
             self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
                                      hPos,vPos)
-
+        image = cv2.resize(self.__image,None,
+                           fx= self.__ShowImageStretch,
+                           fy= self.__ShowImageStretch,
+                           interpolation=cv2.INTER_LINEAR)
+        qimage = self.cvt_CV2QImage(image)
+        self.__imageShow = QPixmap.fromImage(qimage)
 
 
     @Slot()
@@ -407,12 +398,12 @@ class ImageViewer(QQuickPaintedItem):
             raise Exception("painter None Exception...")
         if self.__image is None:
             return
-        image = cv2.resize(self.__image,None,
-                                 fx= self.__ShowImageStretch,
-                                 fy= self.__ShowImageStretch,
-                                 interpolation=cv2.INTER_LINEAR)
-        qimage = self.cvt_CV2QImage(image)
-        self.__imageShow = QPixmap.fromImage(qimage)
+      #  image = cv2.resize(self.__image,None,
+      #                           fx= self.__ShowImageStretch,
+      #                           fy= self.__ShowImageStretch,
+      #                           interpolation=cv2.INTER_LINEAR)
+      #  qimage = self.cvt_CV2QImage(image)
+      #  self.__imageShow = QPixmap.fromImage(qimage)
         if self.__imageShow.isNull() is not True:
                 painter.drawPixmap(self.__ShowImageX,
                                    self.__ShowImageY,
@@ -421,20 +412,6 @@ class ImageViewer(QQuickPaintedItem):
                                    self.__imageShow)
                 #print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
                 self.releaseShowControl()
-              #  hScroll_size = min(self.width() / self.__imageShow.width(),1)
-              #  vScroll_size = min(self.height() / self.__imageShow.height(),1)
-              #  hPos_mediate = abs(self.__ShowImageX /(self.__imageShow.width() - self.width())) if self.__ShowImageX<0 else 0
-              #  vPos_mediate = abs(self.__ShowImageY / (self.__imageShow.height() - self.height())) if self.__ShowImageY < 0 else 0
-              #  hPos = (hPos_mediate *((1 - hScroll_size) * self.width())) / self.width()
-              #  vPos = (vPos_mediate * ((1 - vScroll_size)* self.height())) / self.height()
-                #hPos = min(abs((self.__ShowImageX) / (self.__imageShow.width() - self.width() - hScroll_size)),1)
-                #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
-              #  if self.__SetPosLabel is False:
-              #      self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
-              #                               hPos,vPos)
-              #  else:
-              #      self.__SetPosLabel = False
-              #      print("hScroll_size: ", hScroll_size, "vScroll_size: ",vScroll_size,'hpos: ',hPos,'vpos: ',vPos)
                 if self.__ShowImageX > 0 or self.__ShowImageY > 0:
                     #raise Exception('Not nice ImageX...')
                     pass
@@ -442,7 +419,6 @@ class ImageViewer(QQuickPaintedItem):
         else:
             self.sigAlert.emit('image is null...')
         pass
-
 
     #函数功能：将cv转码得到的数据转换为QImage
     def cvt_CV2QImage(self,cv_data):
