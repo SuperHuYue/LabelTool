@@ -207,6 +207,7 @@ ApplicationWindow{
                 canvas_draw()
                 else {canvas_clear();
                     draw_or_erase = false
+                    rect_canvas.enabled = false
                 }
 
             }

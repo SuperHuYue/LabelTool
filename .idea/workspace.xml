@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,15 +13,15 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/LabelTool$ImageViewerWithColorClassfier.coverage" NAME="ImageViewerWithColorClassfier Coverage Results" MODIFIED="1575370535128" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/projectRelated/projectRelatedpyObj" />
     <SUITE FILE_PATH="coverage/LabelTool$ImageViewer.coverage" NAME="ImageViewer Coverage Results" MODIFIED="1576293724867" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CustomPythonToQml" />
-    <SUITE FILE_PATH="coverage/LabelTool$main.coverage" NAME="main Coverage Results" MODIFIED="1577110173604" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/LabelTool$main.coverage" NAME="main Coverage Results" MODIFIED="1577110375711" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="207">
-              <caret line="9" column="27" lean-forward="true" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
+            <state relative-caret-position="391">
+              <caret line="17" column="20" lean-forward="true" selection-start-line="17" selection-start-column="20" selection-end-line="17" selection-end-column="20" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -335,14 +332,21 @@
       <option name="project" value="LOCAL" />
       <updated>1577082867806</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="canvas delete">
+      <created>1577110246363</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1577110246364</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="88863000" />
+    <option name="totallyTimeSpent" value="89120000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1920" height="1007" extended-state="1" />
+    <frame x="0" y="23" width="1920" height="1007" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19488817" />
@@ -350,7 +354,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.28475335" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.28475335" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.22197309" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -442,6 +446,7 @@
     <MESSAGE value="粗略完成imageview的功能。。可供实验使用" />
     <MESSAGE value="cross line..but have bugs" />
     <MESSAGE value="cross line..fix that bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="cross line..fix that bug" />
+    <MESSAGE value="canvas delete" />
+    <option name="LAST_COMMIT_MESSAGE" value="canvas delete" />
   </component>
 </project>
