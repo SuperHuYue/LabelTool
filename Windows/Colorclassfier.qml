@@ -188,12 +188,33 @@ ApplicationWindow{
     Component{
         id: overlay_rect
         Canvas{
+            property bool draw_or_erase: true
             id:rect_canvas
-            z:2
+            z:3
             width: 200
             height: 200
-            onPaint:{
-                console.log('Overlay_rect painted....')
+            visible: true
+            enabled: true
+            function canvas_clear(){
+                    console.log('enter clear..')
+                    var ctx = rect_canvas.getContext('2d')
+                    ctx.reset()
+                    rect_canvas.requestPaint()
+            }
+            onPaint: {
+                //注意：getContext()仅仅在painted中有效，其他地方调用会出现avaliable始终为false的错误
+                if(draw_or_erase === true)
+                canvas_draw()
+                else {canvas_clear();
+                    draw_or_erase = false
+                }
+
+            }
+
+            function canvas_draw(){
+                console.log('canvase avaliable:' ,rect_canvas.available)
+                if(rect_canvas.available === false)return;
+                console.log('enter draw...')
                 var ctx = rect_canvas.getContext('2d')
                 var background_r= Math.floor(Math.random(image_view.mouse_x)*255)
                 var background_g = Math.floor(Math.random(image_view.mouse_y)*255)
@@ -208,6 +229,22 @@ ApplicationWindow{
                 var pattern = ctx.createPattern(Qt.rgba(front_r, front_g, front_b, 1.0),Qt.BDiagPattern)
                 ctx.fillStyle = pattern
                 ctx.fillRect(0,0,100,100)
+                //rect_canvas.requestPaint()
+            }
+
+            MouseArea{
+                id:rect_canvas_mouseArea
+                anchors.fill: rect_canvas
+                Keys.onPressed : {
+                    console.log('canvas delete...')
+                    rect_canvas.draw_or_erase = false
+                    rect_canvas.requestPaint()
+                    //rect_canvas.canvas_clear()
+                }
+                onClicked: {
+                    console.log('canvas clicked...')
+                    rect_canvas_mouseArea.focus = true //注w意：mouseArea focus
+                }
             }
         }
     }
@@ -322,7 +359,7 @@ ApplicationWindow{
         }
 
         MouseArea{
-            z:0
+            z:2
             id:image_view_mousearea
             anchors.fill: parent
             focus: true
@@ -331,15 +368,22 @@ ApplicationWindow{
             onClicked: {
                 console.log('button clicked...')
                 image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
+                console.log('image_view_mousearea clicked...')
                 var obj = overlay_rect.createObject(image_view)
+                if(obj === null)
+                {
+                console.log('create error...')
+                return
+                }
                 obj.x = mouseX
                 obj.y = mouseY
                 obj.requestPaint()
+                //obj.canvas_draw()
               //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
               //  image_view.show()
-              //  mouse.accept = false
+                mouse.accepted = false
 
             }
             Keys.onPressed: {
@@ -350,8 +394,8 @@ ApplicationWindow{
                     image_view_crossLine.visible = true
                     image_view_crossLine.requestPaint()
                     console.log('image_loaded and key_W pressed...')
-                    event.key.accepted = true
                 }
+
             }
 
             onPositionChanged: {
