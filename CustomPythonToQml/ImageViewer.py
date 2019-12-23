@@ -16,6 +16,7 @@ class ImageViewer(QQuickPaintedItem):
     sigTotalFrame = Signal(int) #总帧数报告
     sigMouse2PicPos = Signal(int,int) #鼠标对应图片上的位置
     sigShowPicInfo = Signal(float,float,float,float) #展示到界面中的图像的参数(针对frame的x，y的偏移,width,height)
+    sigShowScrollInfo = Signal(float,float,float,float) #展示界面中需scrollbar尺寸的参数,分别为水平，垂直轴尺寸以及相关位置
     sigShowReady = Signal() #显示图片,该信号无需导出到QML
     def __init__(self,parent = None):
         super().__init__(parent)
@@ -376,14 +377,14 @@ class ImageViewer(QQuickPaintedItem):
             self.__hScrollSize = hScroll_size
             #hPos = min(abs((self.__ShowImageX) / (self.__imageShow.width() - self.width() - hScroll_size)),1)
             #vPos = min(abs((self.__ShowImageY) / (self.__imageShow.height() - self.height()-vScroll_size)),1)
-            self.sigShowPicInfo.emit(hScroll_size,vScroll_size,
+            self.sigShowScrollInfo.emit(hScroll_size,vScroll_size,
                                      hPos,vPos)
-        image = cv2.resize(self.__image,None,
-                           fx= self.__ShowImageStretch,
-                           fy= self.__ShowImageStretch,
-                           interpolation=cv2.INTER_LINEAR)
-        qimage = self.cvt_CV2QImage(image)
-        self.__imageShow = QPixmap.fromImage(qimage)
+        # image = cv2.resize(self.__image,None,
+        #                    fx= self.__ShowImageStretch,
+        #                    fy= self.__ShowImageStretch,
+        #                    interpolation=cv2.INTER_LINEAR)
+        # qimage = self.cvt_CV2QImage(image)
+        # self.__imageShow = QPixmap.fromImage(qimage)
 
 
     @Slot()
@@ -398,19 +399,20 @@ class ImageViewer(QQuickPaintedItem):
             raise Exception("painter None Exception...")
         if self.__image is None:
             return
-      #  image = cv2.resize(self.__image,None,
-      #                           fx= self.__ShowImageStretch,
-      #                           fy= self.__ShowImageStretch,
-      #                           interpolation=cv2.INTER_LINEAR)
-      #  qimage = self.cvt_CV2QImage(image)
-      #  self.__imageShow = QPixmap.fromImage(qimage)
+        image = cv2.resize(self.__image,None,
+                                 fx= self.__ShowImageStretch,
+                                 fy= self.__ShowImageStretch,
+                                 interpolation=cv2.INTER_LINEAR)
+        qimage = self.cvt_CV2QImage(image)
+        self.__imageShow = QPixmap.fromImage(qimage)
         if self.__imageShow.isNull() is not True:
                 painter.drawPixmap(self.__ShowImageX,
                                    self.__ShowImageY,
                                    self.__imageShow.width(),
                                    self.__imageShow.height(),
                                    self.__imageShow)
-                #print('x:', self.__ShowImageX, 'y: ',self.__ShowImageY)
+                self.sigShowPicInfo.emit(self.__ShowImageX,self.__ShowImageY,self.__imageShow.width(),\
+                                         self.__imageShow.height())
                 self.releaseShowControl()
                 if self.__ShowImageX > 0 or self.__ShowImageY > 0:
                     #raise Exception('Not nice ImageX...')

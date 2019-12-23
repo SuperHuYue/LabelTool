@@ -10,22 +10,23 @@ import ImageViewer 1.0
 ApplicationWindow{
     property int imageview_curFrame: 0
     property int imageview_totalFrame: 0
+    property bool image_loaded: false //just use for init image load
 
     width: 640
     height: 320
-
 
     Rectangle{
         id:root
         anchors.fill: parent
     }
+
     ColorRangeChoose{
         id:space_range_choose
         sliderName: ['lMin','lMax','aMin','aMax','bMin','bMax']
-        visible: false
+        visible:true
         property var space_name: 'lab'
-        x:root.width + 10
-        y:0
+//        x:root.width + 10
+//        y:0
         onSigmove: {
             var pos = lab_fit_data()
             image_view.setRange(space_name,pos[0],pos[1])
@@ -64,6 +65,7 @@ ApplicationWindow{
                 path_view.listviewdata.append({'path':fileChooseDialog.fileUrls[i].toString()})
             }
             image_view.load(fileChooseDialog.fileUrls[0])
+            image_loaded = true
         }
         onRejected: {
             console.log('file_choose canceled...')
@@ -107,7 +109,7 @@ ApplicationWindow{
 //                    space_range_choose.visible = false 使用visible在radiobutton切换过错中会存在问题，具体原因尚且未曾遭到(到graylabel时候会出现空白)
                     space_range_choose.space_name = "luv"
                     space_range_choose.sliderName = ['lMin','lMax','uMin','uMax','vMin','vMax']
-                    space_range_choose.show()
+                    space_range_choose.open()
                 }
 
             }
@@ -121,7 +123,7 @@ ApplicationWindow{
 //                    space_range_choose.visible = false
                     space_range_choose.space_name = "rgb"
                     space_range_choose.sliderName = ['bMin','bMax','gMin','gMax','rMin','rMax']
-                    space_range_choose.show()
+                    space_range_choose.open()
                 }
             }
             RadioButton{
@@ -131,10 +133,9 @@ ApplicationWindow{
                 Layout.preferredWidth: 100
                 onClicked: {
                     space_range_choose.close()
-//                    space_range_choose.visible = false
                     space_range_choose.space_name = 'hls'
                     space_range_choose.sliderName = ['hMin','hMax','lMin','lMax','sMin','sMax']
-                    space_range_choose.show()
+                    space_range_choose.open()
                 }
             }
             RadioButton{
@@ -147,7 +148,7 @@ ApplicationWindow{
 //                    space_range_choose.visible = false
                     space_range_choose.space_name = 'gray'
                     space_range_choose.sliderName = ['Min','Max']
-                    space_range_choose.show()
+                    space_range_choose.open()
                 }
             }
             RadioButton{
@@ -156,11 +157,11 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
-//                    space_range_choose.visible = false
+//                    space_range_choose.close()
+                    space_range_choose.visible = true
                     space_range_choose.space_name = 'lab'
                     space_range_choose.sliderName = ['lMin','lMax','aMin','aMax','bMin','bMax']
-                    space_range_choose.show()
+//                    space_range_choose.open()
                 }
             }
             RadioButton{
@@ -170,6 +171,7 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
+                    space_range_choose.close()
                     space_range_choose.visible = false
                 }
 
@@ -193,13 +195,48 @@ ApplicationWindow{
 
     ImageViewer{
         property double stretch_step: 0.1
+        property double show_image_x: 0
+        property double show_image_y: 0
+        property double show_image_width: 0
+        property double show_image_height: 0
+        property double mouse_x: 0
+        property double mouse_y: 0
         id:image_view
         z:0
         anchors.left:path_view.right
         anchors.right: root.right
         anchors.bottom: root.bottom
         anchors.top: path_view.top
+        clip:true
         visible:true
+        Canvas{
+            id:image_view_crossLine
+            x:image_view.show_image_x
+            y:image_view.show_image_y
+            width: image_view.show_image_width
+            height: image_view.show_image_height
+            z:2
+            visible: false
+            onPaint: {
+                console.log('ready painted..')
+                var ctx = image_view_crossLine.getContext("2d");
+                ctx.reset()
+                ctx.fillStyle = Qt.rgba(1, 0, 0, 0);
+                ctx.fillRect(0, 0, width, height);
+                ctx.beginPath()
+                ctx.strokeStyle = Qt.rgba(0,0,0,1)
+                ctx.lineWidth = 2
+                var p_x = image_view.mouse_x - x
+                var p_y = image_view.mouse_y - y
+                ctx.moveTo(p_x,0)
+                ctx.lineTo(p_x,height)
+                ctx.moveTo(0,p_y)
+                ctx.lineTo(width,p_y)
+                ctx.stroke()
+                //ctx.moveTo(image_view.mouse_x - x,image_view.mouse_y - y)
+            }
+        }
+
         Text {
             id:image_view_frame_idx
             anchors.centerIn: parent
@@ -207,7 +244,6 @@ ApplicationWindow{
             color: 'red'
             z:1
         }
-
 
         CustomScrollBar{
             id:upScrollBar
@@ -274,6 +310,7 @@ ApplicationWindow{
             hoverEnabled: true
             propagateComposedEvents: true
             onClicked: {
+                image_view.focus = true
               //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
@@ -281,6 +318,27 @@ ApplicationWindow{
               //  mouse.accept = false
 
             }
+
+            Keys.onPressed: {
+                console.log('image view key pressed...')
+                if(event.key === Qt.Key_W && image_loaded === true)
+                {
+                    image_view_mousearea.cursorShape = Qt.CrossCursor
+                    image_view_crossLine.visible = true
+                    image_view_crossLine.requestPaint()
+                    console.log('image_loaded and key_W pressed...')
+                    event.key.accepted = true
+                }
+            }
+
+            onPositionChanged: {
+                if(image_view_crossLine.visible === true){
+                    image_view_crossLine.requestPaint()
+                }
+                image_view.mouse_x = mouseX
+                image_view.mouse_y = mouseY
+            }
+
              onWheel: {
                  //console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
                  if(wheel.modifiers &Qt.ControlModifier){
@@ -303,8 +361,8 @@ ApplicationWindow{
     signal sigImageViewCurFrame(int msg)
     signal sigImageViewTotalFrame(int msg)
     signal sigImageViewMouse2PicPos(int x,int y)
-    signal sigImageViewShowPicInfo(double hScrollSize,double vScrollSize,double hpos,double vpos )
-
+    signal sigImageViewShowPicInfo(double x,double y,double width,double height)
+    signal sigImageViewShowScrollInfo(double hScrollSize,double vScrollSize,double hpos,double vpos )
 //    sigCurFrame = Signal(int) #当前帧数报告
 //    sigTotalFrame = Signal(int) #总帧数报告
     Component.onCompleted: {
@@ -313,8 +371,17 @@ ApplicationWindow{
         image_view.sigTotalFrame.connect(sigImageViewTotalFrame)
         image_view.sigMouse2PicPos.connect(sigImageViewMouse2PicPos)
         image_view.sigShowPicInfo.connect(sigImageViewShowPicInfo)
+        image_view.sigShowScrollInfo.connect(sigImageViewShowScrollInfo)
     }
     onSigImageViewShowPicInfo: {
+        console.log('x:',x,'y: ',y,'width: ',width,'height: ',height)
+        image_view.show_image_x = x
+        image_view.show_image_y = y
+        image_view.show_image_width = width
+        image_view.show_image_height = height
+    }
+
+    onSigImageViewShowScrollInfo : {
         console.log('hSize: ',hScrollSize,'vSize: ',vScrollSize,'hPos: ', hpos, 'vpos:' , vpos)
         upScrollBar.size = hScrollSize
         upScrollBar.position = hpos
@@ -352,6 +419,14 @@ ApplicationWindow{
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    function program_init(){
+        image_loaded =false  //图形加载标识
+        view_init()
+    }
+    function view_init(){
+        image_view_mousearea.cursorShape = Qt.ArrowCursor
+        image_view_crossLine.visible = false
+    }
 
 }
 

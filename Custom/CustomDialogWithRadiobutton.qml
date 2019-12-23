@@ -31,7 +31,6 @@ Dialog{
     height: parent.height / 2
     enabled: true
     visible: true
-    modal: true
     closePolicy: Dialog.NoAutoClose   //这个设定很关键，默认关闭策略会在点击dialog外面空间的时候关闭dialog这样就无法达到为们模块化的效果
     header: Rectangle{
         id:header
