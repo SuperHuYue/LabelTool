@@ -23,10 +23,9 @@ ApplicationWindow{
     ColorRangeChoose{
         id:space_range_choose
         sliderName: ['lMin','lMax','aMin','aMax','bMin','bMax']
-        visible:true
         property var space_name: 'lab'
-//        x:root.width + 10
-//        y:0
+        x:root.width + 10
+        y:0
         onSigmove: {
             var pos = lab_fit_data()
             image_view.setRange(space_name,pos[0],pos[1])
@@ -105,11 +104,10 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
-//                    space_range_choose.visible = false 使用visible在radiobutton切换过错中会存在问题，具体原因尚且未曾遭到(到graylabel时候会出现空白)
+                    space_range_choose.hide()
                     space_range_choose.space_name = "luv"
                     space_range_choose.sliderName = ['lMin','lMax','uMin','uMax','vMin','vMax']
-                    space_range_choose.open()
+                    space_range_choose.show()
                 }
 
             }
@@ -119,11 +117,11 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
-//                    space_range_choose.visible = false
+                    space_range_choose.hide()
+//                  space_range_choose.visible = false
                     space_range_choose.space_name = "rgb"
                     space_range_choose.sliderName = ['bMin','bMax','gMin','gMax','rMin','rMax']
-                    space_range_choose.open()
+                    space_range_choose.show()
                 }
             }
             RadioButton{
@@ -132,10 +130,10 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
+                    space_range_choose.hide()
                     space_range_choose.space_name = 'hls'
                     space_range_choose.sliderName = ['hMin','hMax','lMin','lMax','sMin','sMax']
-                    space_range_choose.open()
+                    space_range_choose.show()
                 }
             }
             RadioButton{
@@ -144,11 +142,10 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
-//                    space_range_choose.visible = false
+                    space_range_choose.hide()
                     space_range_choose.space_name = 'gray'
                     space_range_choose.sliderName = ['Min','Max']
-                    space_range_choose.open()
+                    space_range_choose.show()
                 }
             }
             RadioButton{
@@ -157,11 +154,10 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-//                    space_range_choose.close()
-                    space_range_choose.visible = true
+                    space_range_choose.hide()
                     space_range_choose.space_name = 'lab'
                     space_range_choose.sliderName = ['lMin','lMax','aMin','aMax','bMin','bMax']
-//                    space_range_choose.open()
+                    space_range_choose.show()
                 }
             }
             RadioButton{
@@ -171,7 +167,6 @@ ApplicationWindow{
                 Layout.minimumWidth: 30
                 Layout.preferredWidth: 100
                 onClicked: {
-                    space_range_choose.close()
                     space_range_choose.visible = false
                 }
 
@@ -310,7 +305,8 @@ ApplicationWindow{
             hoverEnabled: true
             propagateComposedEvents: true
             onClicked: {
-                image_view.focus = true
+                console.log('button clicked...')
+                image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
               //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
@@ -318,7 +314,6 @@ ApplicationWindow{
               //  mouse.accept = false
 
             }
-
             Keys.onPressed: {
                 console.log('image view key pressed...')
                 if(event.key === Qt.Key_W && image_loaded === true)

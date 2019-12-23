@@ -1,22 +1,31 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
-import QtQuick.Window 2.13
 import QtQuick.Layouts 1.13
-import QtQuick.Dialogs 1.1
-ApplicationWindow{
+import QtQuick.Window 2.2
+Window{
     id:colorRangechoose
     signal sigmove
     visible: false
+    color: 'green'
     width: back.width
     height: back.height
-    //固定窗口
-    maximumHeight: colorRangechoose.height
-    minimumHeight: colorRangechoose.height
-    minimumWidth: colorRangechoose.width
-    maximumWidth: colorRangechoose.width
+    //固定窗口 这样设定会出现bug----在切换的条目少的过程中,整体大小没有随之改变
+//    maximumHeight: colorRangechoose.height
+//    minimumHeight: colorRangechoose.height
+//    minimumWidth: colorRangechoose.width
+//    maximumWidth: colorRangechoose.width
+    maximumHeight: back.height
+    minimumHeight: back.height
+    minimumWidth: back.width
+    maximumWidth:back.width
     property var sliderName:[]
     property var sliderPos:[]
-    background: Rectangle{
+    onClosing:{
+        //must do it or it will quit the binded Application
+        close.accepted = false
+        hide()
+    }
+    Rectangle{
         id:back
         color: 'green'
         width: innerColumn.width
@@ -66,10 +75,6 @@ ApplicationWindow{
                 }
             }
         }
-    }
-
-    onClosing: {
-        close.accepted = true
     }
 }
 //Popup{

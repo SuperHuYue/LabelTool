@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="cross line..but have bugs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Custom/CustomDialogWithRadiobutton.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Custom/CustomDialogWithRadiobutton.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/CustomPythonToQml/ImageViewer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" beforeDir="false" afterPath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" afterDir="false" />
     </list>
@@ -228,7 +224,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576299352338</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="cross line..but have bugs">
+      <created>1577080157355</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1577080157355</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -260,6 +263,7 @@
     <MESSAGE value="加入spacecolor选择模块，并进行了简单测试" />
     <MESSAGE value="更改imageview处理逻辑，处理了线程sync的bug" />
     <MESSAGE value="粗略完成imageview的功能。。可供实验使用" />
-    <option name="LAST_COMMIT_MESSAGE" value="粗略完成imageview的功能。。可供实验使用" />
+    <MESSAGE value="cross line..but have bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="cross line..but have bugs" />
   </component>
 </project>
