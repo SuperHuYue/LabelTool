@@ -8,24 +8,22 @@ import '../projectRelated/projectRelatedQml'
 import ImageViewer 1.0
 
 ApplicationWindow{
+    property int random_seed: 0
     property int imageview_curFrame: 0
     property int imageview_totalFrame: 0
     property bool image_loaded: false //just use for init image load
-
+    id:app_root
     width: 640
     height: 320
 
-    Rectangle{
-        id:root
-        anchors.fill: parent
-    }
 
     ColorRangeChoose{
         id:space_range_choose
         sliderName: ['lMin','lMax','aMin','aMax','bMin','bMax']
         property var space_name: 'lab'
-        x:root.width + 10
-        y:0
+        x:app_root.x +app_root.width + 10
+        y:app_root.y
+
         onSigmove: {
             var pos = lab_fit_data()
             image_view.setRange(space_name,pos[0],pos[1])
@@ -92,8 +90,8 @@ ApplicationWindow{
         id:tool_choose
         anchors.left: menubar.right
         anchors.leftMargin: 2
-        anchors.top: root.top
-        anchors.right: root.right
+        anchors.top: menubar.top
+        width: app_root.width - menubar.width - 2
         anchors.bottom: menubar.bottom
         color: 'pink'
         RowLayout{
@@ -179,13 +177,39 @@ ApplicationWindow{
         id:path_view
         anchors.top: menubar.bottom
         anchors.left: menubar.left
-        width: root.width / 10
-        anchors.bottom: root.bottom
+        width: app_root.width / 10
+        height:app_root.height
         vBarenable:true
         hBarenable:true
         xMoveable: true
         yMoveable:true
 
+    }
+    Component{
+        id: overlay_rect
+        Canvas{
+            id:rect_canvas
+            z:2
+            width: 200
+            height: 200
+            onPaint:{
+                console.log('Overlay_rect painted....')
+                var ctx = rect_canvas.getContext('2d')
+                var background_r= Math.floor(Math.random(image_view.mouse_x)*255)
+                var background_g = Math.floor(Math.random(image_view.mouse_y)*255)
+                var background_b = Math.floor(Math.random(image_view.mouse_x+10)*255)
+                var front_r = Math.floor(Math.random(image_view.mouse_y)*255)
+                var front_g = Math.floor(Math.random(image_view.mouse_x + 10)*255)
+                var front_b = Math.floor(Math.random(image_view.mouse_y + 20)*255)
+                console.log(background_r,background_g,background_b,front_r,front_g,front_b)
+//                ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
+                ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
+                ctx.fillRect(0,0,100,100)
+                var pattern = ctx.createPattern(Qt.rgba(front_r, front_g, front_b, 1.0),Qt.BDiagPattern)
+                ctx.fillStyle = pattern
+                ctx.fillRect(0,0,100,100)
+            }
+        }
     }
 
     ImageViewer{
@@ -199,9 +223,9 @@ ApplicationWindow{
         id:image_view
         z:0
         anchors.left:path_view.right
-        anchors.right: root.right
-        anchors.bottom: root.bottom
         anchors.top: path_view.top
+        width: app_root.width - path_view.width
+        height: app_root.height - menubar.height
         clip:true
         visible:true
         Canvas{
@@ -257,7 +281,7 @@ ApplicationWindow{
         CustomScrollBar{
             id:leftScrollBar
             z:1
-            anchors.left: path_view.right
+            anchors.left:image_view.left
             anchors.top: image_view.top
             anchors.bottom: image_view.bottom
             width: 10
@@ -307,6 +331,10 @@ ApplicationWindow{
             onClicked: {
                 console.log('button clicked...')
                 image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
+                var obj = overlay_rect.createObject(image_view)
+                obj.x = mouseX
+                obj.y = mouseY
+                obj.requestPaint()
               //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
