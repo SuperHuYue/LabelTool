@@ -260,7 +260,7 @@ ApplicationWindow{
         property double show_image_height:0
         property double mouse_x: 0
         property double mouse_y: 0
-        property var list_overlay_rect:[]// save choosed overlap rectangle[Canvas obj,width radio in image,height radio in image]
+        property var list_overlay_rect:[]// save choosed overlap rectangle[Canvas obj,width radio in image,height radio in image,image width,image height]
         //parameters below used for certain operation stream
         property bool pressed_label: false //button pressed
         property int now_opt_type:target_opt_type.none
@@ -409,7 +409,7 @@ ApplicationWindow{
                             console.log('create overlay rect error...')
                             return
                         }
-                        image_view.list_overlay_rect.push([obj,result.x/image_view.show_image_width,result.y/image_view.show_image_height])
+                        image_view.list_overlay_rect.push([obj,result.x/image_view.show_image_width,result.y/image_view.show_image_height,image_view.show_image_width,image_view.show_image_height])
                     }
                 }
                 image_view.pressed_label = true
@@ -487,10 +487,10 @@ ApplicationWindow{
              onWheel: {
                  //console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
                  if(wheel.modifiers &Qt.ControlModifier){
-                     if(wheel.angleDelta.y < 0){ //缩小
+                     if(wheel.angleDelta.y < 0){
                          image_view.shrink(wheel.x,wheel.y)
                      }
-                     else{  					//放大
+                     else{
                          image_view.dilate(wheel.x,wheel.y)
                      }
                      image_view.update()
@@ -499,24 +499,49 @@ ApplicationWindow{
                  wheel.accepted = true
              }
         }
-        //disable all the canvas mousearea so that it can't catch mouse messages
+        //recalculate all the overlap_rect cavas so that it can fix the right pos in image although image dilate or shrink or move and so on
+        //redraw: triggle image paint message if is true
+        function recalculate_overlap_rect_pos(redraw){
+            if(image_view.list_overlay_rect.length == 0){
+                return
+            }
+            for(var i = 0; i < image_view.list_overlay_rect.length; ++i ){
+                var obj = image_view.list_overlay_rect[i][0]
+                var pick_radio_x = image_view.list_overlay_rect[i][1]
+                var pick_radio_y = image_view.list_overlay_rect[i][2]
+                var pick_img_width = image_view.list_overlay_rect[i][3]
+                var pick_img_height = image_view.list_overlay_rect[i][4]
+                obj.x = image_view.show_image_width * pick_radio_x + image_view.show_image_x
+                obj.y = image_view.show_image_height * pick_radio_y + image_view.show_image_y
+                obj.width = obj.width * (image_view.show_image_width / pick_img_width)
+                obj.height = obj.height * (image_view.show_image_height / pick_img_height)
+                if(redraw === true) obj.requestPaint()
+            }
+
+            console.log('recalculate now finish yet...')
+        }
+
+        //disable overlap_rect canvas mousearea so that it can't catch mouse messages
         function disable_overlap_rect_canvas(){
             if(image_view.list_overlay_rect.length === 0){
                 return
             }
-            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
-                var obj = image_view.list_overlay_rect[i][0]
-                obj.mouse_area.enabled= false
-            }
+            image_view.list_overlay_rect.map((param)=>{param[0].mouse_area.enabled = false})
+//            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
+//                var obj = image_view.list_overlay_rect[i][0]
+//                obj.mouse_area.enabled= false
+//            }
         }
+        //enable over_lap_rect canvas mousearea so that it can catch mouse messages
         function enable_overlap_rect_canvas(){
             if(image_view.list_overlay_rect.length === 0){
                 return
             }
-            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
-                var obj = image_view.list_overlay_rect[i][0]
-                obj.mouse_area.enabled = true
-            }
+            image_view.list_overlay_rect.map((param)=>{param[0].mouse_area.enabled = true})
+//            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
+//                var obj = image_view.list_overlay_rect[i][0]
+//                obj.mouse_area.enabled = true
+//            }
         }
 
         //判定鼠标点击位置是否在图像中,在则返回true否则返回false,同时返回对应在图形中的位置
@@ -567,6 +592,7 @@ ApplicationWindow{
         image_view.show_image_y = y
         image_view.show_image_width = width
         image_view.show_image_height = height
+        image_view.recalculate_overlap_rect_pos(true)
     }
 
     onSigImageViewShowScrollInfo : {
@@ -618,7 +644,6 @@ ApplicationWindow{
         image_view.pressed_label = false
         image_view.enable_overlap_rect_canvas()
     }
-
 }
 
 
