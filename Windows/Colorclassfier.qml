@@ -190,6 +190,7 @@ ApplicationWindow{
         Canvas{
             property bool draw_or_erase: true
             property int idx: 0 //当前overlap属于第几号rect
+            property alias mouse_area: rect_canvas_mouseArea
             id:rect_canvas
             z:3
             visible: true
@@ -427,6 +428,7 @@ ApplicationWindow{
                     image_view_mousearea.cursorShape = Qt.CrossCursor
                     image_view_crossLine.visible = true
                     image_view_crossLine.requestPaint()
+                    image_view.disable_overlap_rect_canvas()
                     console.log('image_loaded and key_W pressed...')
                 }
 
@@ -497,6 +499,26 @@ ApplicationWindow{
                  wheel.accepted = true
              }
         }
+        //disable all the canvas mousearea so that it can't catch mouse messages
+        function disable_overlap_rect_canvas(){
+            if(image_view.list_overlay_rect.length === 0){
+                return
+            }
+            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
+                var obj = image_view.list_overlay_rect[i][0]
+                obj.mouse_area.enabled= false
+            }
+        }
+        function enable_overlap_rect_canvas(){
+            if(image_view.list_overlay_rect.length === 0){
+                return
+            }
+            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
+                var obj = image_view.list_overlay_rect[i][0]
+                obj.mouse_area.enabled = true
+            }
+        }
+
         //判定鼠标点击位置是否在图像中,在则返回true否则返回false,同时返回对应在图形中的位置
         function check_in_image(){
 //            console.log('click_inner_image func enter..')
@@ -594,6 +616,7 @@ ApplicationWindow{
         image_view_crossLine.visible = false
         image_view.now_opt_type = target_opt_type.none
         image_view.pressed_label = false
+        image_view.enable_overlap_rect_canvas()
     }
 
 }

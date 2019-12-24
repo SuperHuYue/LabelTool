@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74bd23ef-4289-40c7-939a-4a2210062499" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/LabelTools-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LabelTools-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Custom/CustomMenuBar.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Custom/CustomMenuBar.qml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Windows/Colorclassfier.qml" beforeDir="false" afterPath="$PROJECT_DIR$/Windows/Colorclassfier.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" beforeDir="false" afterPath="$PROJECT_DIR$/projectRelated/projectRelatedQml/ColorRangeChoose.qml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -248,7 +244,14 @@
       <option name="project" value="LOCAL" />
       <updated>1577110246364</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="加入框选对象功能（bugs have）">
+      <created>1577175835985</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1577175835985</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -299,6 +302,7 @@
     <MESSAGE value="cross line..but have bugs" />
     <MESSAGE value="cross line..fix that bug" />
     <MESSAGE value="canvas delete" />
-    <option name="LAST_COMMIT_MESSAGE" value="canvas delete" />
+    <MESSAGE value="加入框选对象功能（bugs have）" />
+    <option name="LAST_COMMIT_MESSAGE" value="加入框选对象功能（bugs have）" />
   </component>
 </project>
