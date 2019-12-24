@@ -515,6 +515,8 @@ ApplicationWindow{
                 obj.y = image_view.show_image_height * pick_radio_y + image_view.show_image_y
                 obj.width = obj.width * (image_view.show_image_width / pick_img_width)
                 obj.height = obj.height * (image_view.show_image_height / pick_img_height)
+                image_view.list_overlay_rect[i][3] = image_view.show_image_width
+                image_view.list_overlay_rect[i][4] = image_view.show_image_height
                 if(redraw === true) obj.requestPaint()
             }
 
