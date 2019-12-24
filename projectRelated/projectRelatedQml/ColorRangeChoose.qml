@@ -57,11 +57,11 @@ Window{
                             colorRangechoose.sigmove()
                         }
                         Component.onCompleted: {
-                            console.log('slider rebuild...')
+//                            console.log('slider rebuild...')
                             sliderPos.push(value)
                         }
                         Component.onDestruction : {
-                            console.log('slider des...')
+//                            console.log('slider des...')
                             if (sliderPos.length !== 0){
                                 sliderPos = []
                             }

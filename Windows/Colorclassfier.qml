@@ -189,10 +189,9 @@ ApplicationWindow{
         id: overlay_rect
         Canvas{
             property bool draw_or_erase: true
+            property int idx: 0 //当前overlap属于第几号rect
             id:rect_canvas
             z:3
-            width: 200
-            height: 200
             visible: true
             enabled: true
             function canvas_clear(){
@@ -213,9 +212,9 @@ ApplicationWindow{
             }
 
             function canvas_draw(){
-                console.log('canvase avaliable:' ,rect_canvas.available)
+//                console.log('canvase avaliable:' ,rect_canvas.available)
                 if(rect_canvas.available === false)return;
-                console.log('enter draw...')
+//                console.log('enter draw...')
                 var ctx = rect_canvas.getContext('2d')
                 var background_r= Math.floor(Math.random(image_view.mouse_x)*255)
                 var background_g = Math.floor(Math.random(image_view.mouse_y)*255)
@@ -223,13 +222,14 @@ ApplicationWindow{
                 var front_r = Math.floor(Math.random(image_view.mouse_y)*255)
                 var front_g = Math.floor(Math.random(image_view.mouse_x + 10)*255)
                 var front_b = Math.floor(Math.random(image_view.mouse_y + 20)*255)
-                console.log(background_r,background_g,background_b,front_r,front_g,front_b)
+//                console.log(background_r,background_g,background_b,front_r,front_g,front_b)
 //                ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
                 ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
-                ctx.fillRect(0,0,100,100)
+                ctx.fillRect(0,0,width,height)
                 var pattern = ctx.createPattern(Qt.rgba(front_r, front_g, front_b, 1.0),Qt.BDiagPattern)
                 ctx.fillStyle = pattern
-                ctx.fillRect(0,0,100,100)
+                ctx.fillRect(0,0,width,height)
+                ctx.text(idx,width/2,height/2)
                 //rect_canvas.requestPaint()
             }
 
@@ -251,14 +251,19 @@ ApplicationWindow{
     }
 
     ImageViewer{
+        id:image_view
         property double stretch_step: 0.1
-        property double show_image_x: 0
-        property double show_image_y: 0
+        property double show_image_x:0
+        property double show_image_y:0
         property double show_image_width: 0
-        property double show_image_height: 0
+        property double show_image_height:0
         property double mouse_x: 0
         property double mouse_y: 0
-        id:image_view
+        property var list_overlay_rect:[]// save choosed overlap rectangle[Canvas obj,width radio in image,height radio in image]
+        //parameters below used for certain operation stream
+        property bool pressed_label: false //button pressed
+        property int now_opt_type:target_opt_type.none
+
         z:0
         anchors.left:path_view.right
         anchors.top: path_view.top
@@ -266,6 +271,13 @@ ApplicationWindow{
         height: app_root.height - menubar.height
         clip:true
         visible:true
+
+        QtObject{
+            id:target_opt_type
+            property int none: 0
+            property int new_rect:1
+            property int move_rect: 2
+            }
         Canvas{
             id:image_view_crossLine
             x:image_view.show_image_x
@@ -275,7 +287,7 @@ ApplicationWindow{
             z:2
             visible: false
             onPaint: {
-                console.log('ready painted..')
+//                console.log('cross line painted..')
                 var ctx = image_view_crossLine.getContext("2d");
                 ctx.reset()
                 ctx.fillStyle = Qt.rgba(1, 0, 0, 0);
@@ -311,7 +323,7 @@ ApplicationWindow{
             height:10
             state:"horizental"
             onPositionchange: {
-                console.log(pos)
+//                console.log(pos)
                 image_view.setHorizentalPos(pos)
             }
         }
@@ -325,7 +337,7 @@ ApplicationWindow{
             width: 10
             state: "vertical"
             onPositionchange: {
-                console.log(pos)
+//                console.log(pos)
                 image_view.setVerticalPos(pos)
             }
         }
@@ -365,47 +377,110 @@ ApplicationWindow{
             anchors.fill: parent
             focus: true
             hoverEnabled: true
-            propagateComposedEvents: true
-            onClicked: {
-                console.log('button clicked...')
-                image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
+
+            onPressed : {
+                image_view_mousearea.focus = true
                 console.log('image_view_mousearea clicked...')
-                var obj = overlay_rect.createObject(image_view)
-                if(obj === null)
-                {
-                console.log('create error...')
-                return
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
+//                console.log('image_view_mousearea clicked...')
+//                var obj = overlay_rect.createObject(image_view)
+//                if(obj === null)
+//                {
+//                console.log('create error...')
+//                return
+//                }
+//                obj.x = mouseX
+//                obj.y = mouseY
+//                obj.width = 100
+//                obj.height = 100
+//                obj.requestPaint()
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                image_view.mouse_x = mouseX
+                image_view.mouse_y = mouseY
+                if(image_view_mousearea.cursorShape === Qt.CrossCursor &&
+                   image_view.now_opt_type === target_opt_type.new_rect ){
+                    var result = image_view.check_in_image()
+                    console.log("avaliable: ",result.avaliable,"x: ",result.x,"y: ",result.y)
+                    if(result.avaliable === true){
+                        var obj = overlay_rect.createObject(image_view)
+                        if(obj === null){
+                            console.log('create overlay rect error...')
+                            return
+                        }
+                        image_view.list_overlay_rect.push([obj,result.x/image_view.show_image_width,result.y/image_view.show_image_height])
+                    }
                 }
-                obj.x = mouseX
-                obj.y = mouseY
-                obj.requestPaint()
-                //obj.canvas_draw()
+                image_view.pressed_label = true
               //下一帧图像的调用方式
               //  console.log('image click...')
               //  image_view.next()
               //  image_view.show()
-                mouse.accepted = false
-
+//                mouse.accepted = false
             }
+
             Keys.onPressed: {
                 console.log('image view key pressed...')
                 if(event.key === Qt.Key_W && image_loaded === true)
                 {
+                    image_view.now_opt_type= target_opt_type.new_rect
                     image_view_mousearea.cursorShape = Qt.CrossCursor
                     image_view_crossLine.visible = true
                     image_view_crossLine.requestPaint()
                     console.log('image_loaded and key_W pressed...')
                 }
 
-            }
+                //new rect interrupt
+                if(event.key === Qt.Key_Escape && image_view.now_opt_type === target_opt_type.new_rect){
+                        //interrupt will pop the lastest one in onverlap rect list
+                        if(image_view.list_overlay_rect.length !== 0){
+                            console.log('interrupt...now length:',image_view.list_overlay_rect.length)
+                            var obj = image_view.list_overlay_rect.pop()[0]
+                            obj.draw_or_erase = false
+                            obj.requestPaint()
+                            console.log('interrupt...poped now length:',image_view.list_overlay_rect.length)
+                        }
+                        view_init()
+                    }
+                }
 
             onPositionChanged: {
-                if(image_view_crossLine.visible === true){
-                    image_view_crossLine.requestPaint()
-                }
                 image_view.mouse_x = mouseX
                 image_view.mouse_y = mouseY
+                if(image_view_mousearea.cursorShape === Qt.CrossCursor && image_view.pressed_label === true &&
+                   image_view.now_opt_type === target_opt_type.new_rect && image_view.list_overlay_rect.length > 0){
+//                    console.log("list_length: ",image_view.list_overlay_rect.length)
+                    var target = image_view.list_overlay_rect[image_view.list_overlay_rect.length - 1]
+                    var result = image_view.check_in_image()
+                    if(result.avaliable === false)return
+                    var obj = target[0]
+                    var pressed_pos_x = target[1] * image_view.show_image_width
+                    var pressed_pos_y = target[2] * image_view.show_image_height
+                    var left = Math.min(pressed_pos_x,result.x)
+                    var top = Math.min(pressed_pos_y,result.y)
+                    var right = Math.max(pressed_pos_x,result.x)
+                    var bottom = Math.max(pressed_pos_y,result.y)
+                    obj.x = left + image_view.show_image_x
+                    obj.y = top + image_view.show_image_y
+                    obj.width = right - left
+                    obj.height = bottom - top
+                    obj.requestPaint()
+//                    console.log("click_pos: ", click_pos.x,click_pos.y,'move_pos: ',result.x,result.y)
+
+                }
+                image_view_crossLine.requestPaint()
             }
+            onReleased: {
+                console.log('Mouse released...')
+                //new rect situation
+                if(image_view_mousearea.cursorShape === Qt.CrossCursor && image_view.pressed_label === true &&
+                   image_view.now_opt_type === target_opt_type.new_rect ){
+                    //do something if needed
+                    view_init()
+                }
+                image_view.pressed_label = false
+            }
+
 
              onWheel: {
                  //console.log("PosX: ",wheel.x,"PosY: ",wheel.y)
@@ -422,6 +497,29 @@ ApplicationWindow{
                  wheel.accepted = true
              }
         }
+        //判定鼠标点击位置是否在图像中,在则返回true否则返回false,同时返回对应在图形中的位置
+        function check_in_image(){
+//            console.log('click_inner_image func enter..')
+            if(image_view.show_image_width === 0 || image_view.show_image_height === 0){
+                console.log('Not loaded image yet...')
+                return {avaliable:false,
+                        x:0,
+                        y:0}
+            }
+            var tp_x = image_view.mouse_x - image_view.show_image_x
+            var tp_y = image_view.mouse_y - image_view.show_image_y
+            if(tp_x > 0 && tp_y > 0 &&
+               tp_x < image_view.show_image_width && tp_y < image_view.show_image_height){
+                return {avaliable:true,
+                        x:tp_x,
+                        y:tp_y}
+            }else{
+                return {avaliable:false,
+                        x:0,
+                        y:0}
+            }
+        }
+
     }
 
 //处理信号连接
@@ -442,7 +540,7 @@ ApplicationWindow{
         image_view.sigShowScrollInfo.connect(sigImageViewShowScrollInfo)
     }
     onSigImageViewShowPicInfo: {
-        console.log('x:',x,'y: ',y,'width: ',width,'height: ',height)
+//        console.log('x:',x,'y: ',y,'width: ',width,'height: ',height)
         image_view.show_image_x = x
         image_view.show_image_y = y
         image_view.show_image_width = width
@@ -450,7 +548,7 @@ ApplicationWindow{
     }
 
     onSigImageViewShowScrollInfo : {
-        console.log('hSize: ',hScrollSize,'vSize: ',vScrollSize,'hPos: ', hpos, 'vpos:' , vpos)
+//        console.log('hSize: ',hScrollSize,'vSize: ',vScrollSize,'hPos: ', hpos, 'vpos:' , vpos)
         upScrollBar.size = hScrollSize
         upScrollBar.position = hpos
         upScrollBar.update()
@@ -494,6 +592,8 @@ ApplicationWindow{
     function view_init(){
         image_view_mousearea.cursorShape = Qt.ArrowCursor
         image_view_crossLine.visible = false
+        image_view.now_opt_type = target_opt_type.none
+        image_view.pressed_label = false
     }
 
 }

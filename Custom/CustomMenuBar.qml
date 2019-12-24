@@ -12,7 +12,6 @@ MenuBar {
 //    Menu { title: qsTr("Help") }
     delegate: MenuBarItem {
         id: menuBarItem
-
         contentItem: Text {
             text: menuBarItem.text
             font: menuBarItem.font
