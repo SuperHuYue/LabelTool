@@ -188,8 +188,12 @@ ApplicationWindow{
     Component{
         id: overlay_rect
         Canvas{
-            property bool draw_or_erase: true
+            property int paint_type: 0
             property int idx: 0 //当前overlap属于第几号rect
+            property int image_x: 0
+            property int image_y: 0
+            property int image_width: 0
+            property int image_height: 0
             property alias mouse_area: rect_canvas_mouseArea
             id:rect_canvas
             z:3
@@ -199,15 +203,17 @@ ApplicationWindow{
                     console.log('enter clear..')
                     var ctx = rect_canvas.getContext('2d')
                     ctx.reset()
-                    rect_canvas.requestPaint()
             }
             onPaint: {
                 //注意：getContext()仅仅在painted中有效，其他地方调用会出现avaliable始终为false的错误
-                if(draw_or_erase === true)
+                if(rect_canvas.paint_type === 0)
                 canvas_draw()
-                else {canvas_clear();
-                    draw_or_erase = false
+                else if(rect_canvas.paint_type === 1) {
+                    canvas_clear();
                     rect_canvas.enabled = false
+                }else{
+                    canvas_clear()
+                    canvas_draw()
                 }
 
             }
@@ -215,7 +221,7 @@ ApplicationWindow{
             function canvas_draw(){
 //                console.log('canvase avaliable:' ,rect_canvas.available)
                 if(rect_canvas.available === false)return;
-//                console.log('enter draw...')
+                console.log('enter draw...')
                 var ctx = rect_canvas.getContext('2d')
                 var background_r= Math.floor(Math.random(image_view.mouse_x)*255)
                 var background_g = Math.floor(Math.random(image_view.mouse_y)*255)
@@ -226,6 +232,7 @@ ApplicationWindow{
 //                console.log(background_r,background_g,background_b,front_r,front_g,front_b)
 //                ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
                 ctx.fillStyle = Qt.rgba(background_r,background_g,background_b,0.5)
+                console.log('draw_width: ',width,'draw_height: ',height)
                 ctx.fillRect(0,0,width,height)
                 var pattern = ctx.createPattern(Qt.rgba(front_r, front_g, front_b, 1.0),Qt.BDiagPattern)
                 ctx.fillStyle = pattern
@@ -237,12 +244,12 @@ ApplicationWindow{
             MouseArea{
                 id:rect_canvas_mouseArea
                 anchors.fill: rect_canvas
-                Keys.onPressed : {
-                    console.log('canvas delete...')
-                    rect_canvas.draw_or_erase = false
-                    rect_canvas.requestPaint()
-                    //rect_canvas.canvas_clear()
-                }
+               // Keys.onPressed : {
+               //     console.log('canvas delete...')
+               //     rect_canvas.paint_type= 1
+               //     rect_canvas.requestPaint()
+               //     //rect_canvas.canvas_clear()
+               // }
                 onClicked: {
                     console.log('canvas clicked...')
                     rect_canvas_mouseArea.focus = true //注w意：mouseArea focus
@@ -251,6 +258,62 @@ ApplicationWindow{
         }
     }
 
+        CustomScrollBar{
+            id:upScrollBar
+            z:1
+            anchors.top: tool_choose.bottom
+            anchors.left:path_view.right
+            anchors.right: tool_choose.right
+            height:10
+            state:"horizental"
+            onPositionchange: {
+//                console.log(pos)
+                image_view.setHorizentalPos(pos)
+            }
+        }
+//如下两种用法均可以达到相同的效果
+        CustomScrollBar{
+            id:leftScrollBar
+            z:1
+            anchors.left:path_view.right
+            anchors.top:upScrollBar.bottom
+            anchors.bottom: path_view.bottom
+            width: 10
+            state: "vertical"
+            onPositionchange: {
+//                console.log(pos)
+                image_view.setVerticalPos(pos)
+            }
+        }
+
+        ScrollBar{
+            id:vBar
+            z:1
+            policy: ScrollBar.AlwaysOn
+            anchors.right: image_view.right
+            anchors.bottom: image_view.bottom
+            anchors.top: image_view.top
+            width: 10
+            orientation: Qt.Vertical
+            contentItem.onYChanged : {
+                console.log('content: ',contentItem.y)
+            }
+        }
+//end
+
+        ScrollBar{
+            id:hBar
+            z:1
+            anchors.bottom: image_view.bottom
+            anchors.left: image_view.left
+            anchors.right: image_view.right
+            height: 10
+            policy: ScrollBar.AlwaysOn
+            orientation: Qt.Horizontal
+            onXChanged: {
+                console.log('hBar: ',x)
+            }
+        }
     ImageViewer{
         id:image_view
         property double stretch_step: 0.1
@@ -260,7 +323,7 @@ ApplicationWindow{
         property double show_image_height:0
         property double mouse_x: 0
         property double mouse_y: 0
-        property var list_overlay_rect:[]// save choosed overlap rectangle[Canvas obj,width radio in image,height radio in image,image width,image height]
+        property var list_overlay_rect:[]// save choosed overlap rectangle[Canvas obj]
         //parameters below used for certain operation stream
         property bool pressed_label: false //button pressed
         property int now_opt_type:target_opt_type.none
@@ -315,62 +378,6 @@ ApplicationWindow{
             z:1
         }
 
-        CustomScrollBar{
-            id:upScrollBar
-            z:1
-            anchors.top: image_view.top
-            anchors.left: image_view.left
-            anchors.right: image_view.right
-            height:10
-            state:"horizental"
-            onPositionchange: {
-//                console.log(pos)
-                image_view.setHorizentalPos(pos)
-            }
-        }
-//如下两种用法均可以达到相同的效果
-        CustomScrollBar{
-            id:leftScrollBar
-            z:1
-            anchors.left:image_view.left
-            anchors.top: image_view.top
-            anchors.bottom: image_view.bottom
-            width: 10
-            state: "vertical"
-            onPositionchange: {
-//                console.log(pos)
-                image_view.setVerticalPos(pos)
-            }
-        }
-
-        ScrollBar{
-            id:vBar
-            z:1
-            policy: ScrollBar.AlwaysOn
-            anchors.right: image_view.right
-            anchors.bottom: image_view.bottom
-            anchors.top: image_view.top
-            width: 10
-            orientation: Qt.Vertical
-            contentItem.onYChanged : {
-                console.log('content: ',contentItem.y)
-            }
-        }
-//end
-
-        ScrollBar{
-            id:hBar
-            z:1
-            anchors.bottom: image_view.bottom
-            anchors.left: image_view.left
-            anchors.right: image_view.right
-            height: 10
-            policy: ScrollBar.AlwaysOn
-            orientation: Qt.Horizontal
-            onXChanged: {
-                console.log('hBar: ',x)
-            }
-        }
 
         MouseArea{
             z:2
@@ -409,7 +416,19 @@ ApplicationWindow{
                             console.log('create overlay rect error...')
                             return
                         }
-                        image_view.list_overlay_rect.push([obj,result.x/image_view.show_image_width,result.y/image_view.show_image_height,image_view.show_image_width,image_view.show_image_height])
+                       // property int image_x: 0
+                       // property int image_y: 0
+                       // property int image_width: 0
+                       // property int image_height: 0
+                        obj.image_x= result.x
+                        obj.image_y= result.y
+                        obj.x = mouseX
+                        obj.y = mouseY
+                        obj.width = 0
+                        obj.height =0
+                        obj.image_width = image_view.show_image_width
+                        obj.image_height = image_view.show_image_height
+                        image_view.list_overlay_rect.push(obj)
                     }
                 }
                 image_view.pressed_label = true
@@ -437,8 +456,8 @@ ApplicationWindow{
                         //interrupt will pop the lastest one in onverlap rect list
                         if(image_view.list_overlay_rect.length !== 0){
                             console.log('interrupt...now length:',image_view.list_overlay_rect.length)
-                            var obj = image_view.list_overlay_rect.pop()[0]
-                            obj.draw_or_erase = false
+                            var obj = image_view.list_overlay_rect.pop()
+                            obj.paint_type = 1
                             obj.requestPaint()
                             console.log('interrupt...poped now length:',image_view.list_overlay_rect.length)
                         }
@@ -455,9 +474,10 @@ ApplicationWindow{
                     var target = image_view.list_overlay_rect[image_view.list_overlay_rect.length - 1]
                     var result = image_view.check_in_image()
                     if(result.avaliable === false)return
-                    var obj = target[0]
-                    var pressed_pos_x = target[1] * image_view.show_image_width
-                    var pressed_pos_y = target[2] * image_view.show_image_height
+                    var obj = target
+                    var pressed_pos_x = (obj.image_x / obj.image_width) * image_view.show_image_width
+                    var pressed_pos_y = (obj.image_y / obj.image_height) * image_view.show_image_height
+                    console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
                     var left = Math.min(pressed_pos_x,result.x)
                     var top = Math.min(pressed_pos_y,result.y)
                     var right = Math.max(pressed_pos_x,result.x)
@@ -466,6 +486,12 @@ ApplicationWindow{
                     obj.y = top + image_view.show_image_y
                     obj.width = right - left
                     obj.height = bottom - top
+                    obj.image_x = left
+                    obj.image_y = top
+                    obj.image_width = image_view.show_image_width
+                    obj.image_height = image_view.show_image_height
+                   // target[1] = left / image_view.show_image_width
+                   // target[2] = top / image_view.show_image_height
                     obj.requestPaint()
 //                    console.log("click_pos: ", click_pos.x,click_pos.y,'move_pos: ',result.x,result.y)
 
@@ -474,9 +500,34 @@ ApplicationWindow{
             }
             onReleased: {
                 console.log('Mouse released...')
+                image_view.mouse_x = mouseX
+                image_view.mouse_y = mouseY
                 //new rect situation
                 if(image_view_mousearea.cursorShape === Qt.CrossCursor && image_view.pressed_label === true &&
-                   image_view.now_opt_type === target_opt_type.new_rect ){
+                   image_view.now_opt_type === target_opt_type.new_rect && image_view.list_overlay_rect.length > 0){
+                    //console.log("list_length: ",image_view.list_overlay_rect.length)
+                    var target = image_view.list_overlay_rect[image_view.list_overlay_rect.length - 1]
+                    var result = image_view.check_in_image()
+                    if(result.avaliable === false)return
+                    var obj = target
+                    var pressed_pos_x = (obj.image_x / obj.image_width) * image_view.show_image_width
+                    var pressed_pos_y = (obj.image_y / obj.image_height) * image_view.show_image_height
+                    console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
+                    var left = Math.min(pressed_pos_x,result.x)
+                    var top = Math.min(pressed_pos_y,result.y)
+                    var right = Math.max(pressed_pos_x,result.x)
+                    var bottom = Math.max(pressed_pos_y,result.y)
+                    obj.x = left + image_view.show_image_x
+                    obj.y = top + image_view.show_image_y
+                    obj.width = right - left
+                    obj.height = bottom - top
+                    obj.image_x = left
+                    obj.image_y = top
+                    obj.image_width = image_view.show_image_width
+                    obj.image_height = image_view.show_image_height
+                       // target[1] = left / image_view.show_image_width
+                       // target[2] = top / image_view.show_image_height
+                    obj.requestPaint()
                     //do something if needed
                     view_init()
                 }
@@ -506,21 +557,23 @@ ApplicationWindow{
                 return
             }
             for(var i = 0; i < image_view.list_overlay_rect.length; ++i ){
-                var obj = image_view.list_overlay_rect[i][0]
-                var pick_radio_x = image_view.list_overlay_rect[i][1]
-                var pick_radio_y = image_view.list_overlay_rect[i][2]
-                var pick_img_width = image_view.list_overlay_rect[i][3]
-                var pick_img_height = image_view.list_overlay_rect[i][4]
-                obj.x = image_view.show_image_width * pick_radio_x + image_view.show_image_x
-                obj.y = image_view.show_image_height * pick_radio_y + image_view.show_image_y
+                var obj = image_view.list_overlay_rect[i]
+                var pick_radio_x = obj.image_x / obj.image_width
+                var pick_radio_y = obj.image_y / obj.image_height
+                var pick_img_width = obj.image_width
+                var pick_img_height = obj.image_height
+                obj.image_x = image_view.show_image_width * pick_radio_x
+                obj.image_y = image_view.show_image_height * pick_radio_y
+                obj.x = obj.image_x + image_view.show_image_x
+                obj.y = obj.image_y + image_view.show_image_y
                 obj.width = obj.width * (image_view.show_image_width / pick_img_width)
                 obj.height = obj.height * (image_view.show_image_height / pick_img_height)
-                image_view.list_overlay_rect[i][3] = image_view.show_image_width
-                image_view.list_overlay_rect[i][4] = image_view.show_image_height
-                if(redraw === true) obj.requestPaint()
+                obj.image_width = image_view.show_image_width
+                obj.image_height = image_view.show_image_height
+                if(redraw === true){obj.paint_type= 2; obj.requestPaint()}
             }
 
-            console.log('recalculate now finish yet...')
+            console.log('recalculate...')
         }
 
         //disable overlap_rect canvas mousearea so that it can't catch mouse messages
@@ -539,7 +592,7 @@ ApplicationWindow{
             if(image_view.list_overlay_rect.length === 0){
                 return
             }
-            image_view.list_overlay_rect.map((param)=>{param[0].mouse_area.enabled = true})
+            image_view.list_overlay_rect.map((param)=>{param.mouse_area.enabled = true})
 //            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
 //                var obj = image_view.list_overlay_rect[i][0]
 //                obj.mouse_area.enabled = true
@@ -590,11 +643,11 @@ ApplicationWindow{
     }
     onSigImageViewShowPicInfo: {
 //        console.log('x:',x,'y: ',y,'width: ',width,'height: ',height)
-        image_view.show_image_x = x
-        image_view.show_image_y = y
-        image_view.show_image_width = width
-        image_view.show_image_height = height
-        image_view.recalculate_overlap_rect_pos(true)
+          image_view.show_image_x = x
+          image_view.show_image_y = y
+          image_view.show_image_width = width
+          image_view.show_image_height = height
+          image_view.recalculate_overlap_rect_pos(true)
     }
 
     onSigImageViewShowScrollInfo : {
