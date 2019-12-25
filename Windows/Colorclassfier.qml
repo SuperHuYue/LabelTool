@@ -190,10 +190,14 @@ ApplicationWindow{
         Canvas{
             property int paint_type: 0
             property int idx: 0 //当前overlap属于第几号rect
-            property int image_x: 0
-            property int image_y: 0
-            property int image_width: 0
-            property int image_height: 0
+            property int rect_anchor_x: 0 //pressed x to image
+            property int rect_anchor_y: 0 //pressed y to image
+            property int anchorImageWidth: 0 //image width when save rect_anchor_x and rect_anchor_y
+            property int anchorImageHeight: 0 //image height when save rect_anchor_x and rect_anchor_y
+            property int moveX2ImageX: 0  //moved x to image
+            property int moveY2ImageY: 0
+            property int moveImageWidth: 0
+            property int moveImageHeight: 0
             property alias mouse_area: rect_canvas_mouseArea
             id:rect_canvas
             z:3
@@ -327,7 +331,6 @@ ApplicationWindow{
         //parameters below used for certain operation stream
         property bool pressed_label: false //button pressed
         property int now_opt_type:target_opt_type.none
-
         z:0
         anchors.left:path_view.right
         anchors.top: path_view.top
@@ -389,25 +392,10 @@ ApplicationWindow{
             onPressed : {
                 image_view_mousearea.focus = true
                 console.log('image_view_mousearea clicked...')
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                image_view_mousearea.focus = true //必须这里设定focus否则无法接收键盘指令
-//                console.log('image_view_mousearea clicked...')
-//                var obj = overlay_rect.createObject(image_view)
-//                if(obj === null)
-//                {
-//                console.log('create error...')
-//                return
-//                }
-//                obj.x = mouseX
-//                obj.y = mouseY
-//                obj.width = 100
-//                obj.height = 100
-//                obj.requestPaint()
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 image_view.mouse_x = mouseX
                 image_view.mouse_y = mouseY
-                if(image_view_mousearea.cursorShape === Qt.CrossCursor &&
-                   image_view.now_opt_type === target_opt_type.new_rect ){
+                if(image_view_mousearea.cursorShape === Qt.CrossCursor){
+                    image_view.now_opt_type= target_opt_type.new_rect
                     var result = image_view.check_in_image()
                     console.log("avaliable: ",result.avaliable,"x: ",result.x,"y: ",result.y)
                     if(result.avaliable === true){
@@ -416,18 +404,12 @@ ApplicationWindow{
                             console.log('create overlay rect error...')
                             return
                         }
-                       // property int image_x: 0
-                       // property int image_y: 0
-                       // property int image_width: 0
-                       // property int image_height: 0
-                        obj.image_x= result.x
-                        obj.image_y= result.y
+                        obj.rect_anchor_x = result.x
+                        obj.rect_anchor_y = result.y
                         obj.x = mouseX
                         obj.y = mouseY
-                        obj.width = 0
-                        obj.height =0
-                        obj.image_width = image_view.show_image_width
-                        obj.image_height = image_view.show_image_height
+                        obj.anchorImageWidth = image_view.show_image_width
+                        obj.anchorImageHeight = image_view.show_image_height
                         image_view.list_overlay_rect.push(obj)
                     }
                 }
@@ -443,7 +425,6 @@ ApplicationWindow{
                 console.log('image view key pressed...')
                 if(event.key === Qt.Key_W && image_loaded === true)
                 {
-                    image_view.now_opt_type= target_opt_type.new_rect
                     image_view_mousearea.cursorShape = Qt.CrossCursor
                     image_view_crossLine.visible = true
                     image_view_crossLine.requestPaint()
@@ -475,9 +456,9 @@ ApplicationWindow{
                     var result = image_view.check_in_image()
                     if(result.avaliable === false)return
                     var obj = target
-                    var pressed_pos_x = (obj.image_x / obj.image_width) * image_view.show_image_width
-                    var pressed_pos_y = (obj.image_y / obj.image_height) * image_view.show_image_height
-                    console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
+                    var pressed_pos_x = (obj.rect_anchor_x / obj.anchorImageWidth) * image_view.show_image_width
+                    var pressed_pos_y = (obj.rect_anchor_y / obj.anchorImageHeight) * image_view.show_image_height
+                    //console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
                     var left = Math.min(pressed_pos_x,result.x)
                     var top = Math.min(pressed_pos_y,result.y)
                     var right = Math.max(pressed_pos_x,result.x)
@@ -486,12 +467,10 @@ ApplicationWindow{
                     obj.y = top + image_view.show_image_y
                     obj.width = right - left
                     obj.height = bottom - top
-                    obj.image_x = left
-                    obj.image_y = top
-                    obj.image_width = image_view.show_image_width
-                    obj.image_height = image_view.show_image_height
-                   // target[1] = left / image_view.show_image_width
-                   // target[2] = top / image_view.show_image_height
+                    obj.moveX2ImageX = result.x
+                    obj.moveY2ImageY = result.y
+                    obj.moveImageWidth = image_view.show_image_width
+                    obj.moveImageHeight = image_view.show_image_height
                     obj.requestPaint()
 //                    console.log("click_pos: ", click_pos.x,click_pos.y,'move_pos: ',result.x,result.y)
 
@@ -502,17 +481,16 @@ ApplicationWindow{
                 console.log('Mouse released...')
                 image_view.mouse_x = mouseX
                 image_view.mouse_y = mouseY
-                //new rect situation
                 if(image_view_mousearea.cursorShape === Qt.CrossCursor && image_view.pressed_label === true &&
                    image_view.now_opt_type === target_opt_type.new_rect && image_view.list_overlay_rect.length > 0){
-                    //console.log("list_length: ",image_view.list_overlay_rect.length)
+//                    console.log("list_length: ",image_view.list_overlay_rect.length)
                     var target = image_view.list_overlay_rect[image_view.list_overlay_rect.length - 1]
                     var result = image_view.check_in_image()
                     if(result.avaliable === false)return
                     var obj = target
-                    var pressed_pos_x = (obj.image_x / obj.image_width) * image_view.show_image_width
-                    var pressed_pos_y = (obj.image_y / obj.image_height) * image_view.show_image_height
-                    console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
+                    var pressed_pos_x = (obj.rect_anchor_x / obj.anchorImageWidth) * image_view.show_image_width
+                    var pressed_pos_y = (obj.rect_anchor_y / obj.anchorImageHeight) * image_view.show_image_height
+                    //console.log('pressed_pos_x: ',pressed_pos_x,'pressed_pos_y: ',pressed_pos_y,'result_x: ',result.x,'result_y: ',result.y)
                     var left = Math.min(pressed_pos_x,result.x)
                     var top = Math.min(pressed_pos_y,result.y)
                     var right = Math.max(pressed_pos_x,result.x)
@@ -521,16 +499,15 @@ ApplicationWindow{
                     obj.y = top + image_view.show_image_y
                     obj.width = right - left
                     obj.height = bottom - top
-                    obj.image_x = left
-                    obj.image_y = top
-                    obj.image_width = image_view.show_image_width
-                    obj.image_height = image_view.show_image_height
-                       // target[1] = left / image_view.show_image_width
-                       // target[2] = top / image_view.show_image_height
+                    obj.moveX2ImageX = result.x
+                    obj.moveY2ImageY = result.y
+                    obj.moveImageWidth = image_view.show_image_width
+                    obj.moveImageHeight = image_view.show_image_height
                     obj.requestPaint()
-                    //do something if needed
                     view_init()
+
                 }
+                image_view_crossLine.requestPaint()
                 image_view.pressed_label = false
             }
 
@@ -558,18 +535,24 @@ ApplicationWindow{
             }
             for(var i = 0; i < image_view.list_overlay_rect.length; ++i ){
                 var obj = image_view.list_overlay_rect[i]
-                var pick_radio_x = obj.image_x / obj.image_width
-                var pick_radio_y = obj.image_y / obj.image_height
-                var pick_img_width = obj.image_width
-                var pick_img_height = obj.image_height
-                obj.image_x = image_view.show_image_width * pick_radio_x
-                obj.image_y = image_view.show_image_height * pick_radio_y
-                obj.x = obj.image_x + image_view.show_image_x
-                obj.y = obj.image_y + image_view.show_image_y
-                obj.width = obj.width * (image_view.show_image_width / pick_img_width)
-                obj.height = obj.height * (image_view.show_image_height / pick_img_height)
-                obj.image_width = image_view.show_image_width
-                obj.image_height = image_view.show_image_height
+                var pick_radio_x = obj.rect_anchor_x / obj.anchorImageWidth
+                var pick_radio_y = obj.rect_anchor_y / obj.anchorImageHeight
+                var anchor_x = image_view.show_image_width * pick_radio_x
+                var anchor_y = image_view.show_image_height * pick_radio_y
+                var move_radio_x = obj.moveX2ImageX / obj.moveImageWidth
+                var move_radio_y = obj.moveY2ImageY / obj.moveImageHeight
+                var move_x= image_view.show_image_width * move_radio_x
+                var move_y= image_view.show_image_height * move_radio_y
+                //console.log(move_x,anchor_x,move_y,anchor_y)
+                var left = Math.min(move_x, anchor_x)
+                var top = Math.min(move_y, anchor_y)
+                var right = Math.max(move_x,anchor_x)
+                var bottom = Math.max(move_y,anchor_y)
+                console.log('left: ',left,'top: ',top,'right: ',right,'bottom: ',bottom)
+                obj.x = left + image_view.show_image_x
+                obj.y = top + image_view.show_image_y
+                obj.width = right - left
+                obj.height = bottom - top
                 if(redraw === true){obj.paint_type= 2; obj.requestPaint()}
             }
 
@@ -581,22 +564,15 @@ ApplicationWindow{
             if(image_view.list_overlay_rect.length === 0){
                 return
             }
-            image_view.list_overlay_rect.map((param)=>{param[0].mouse_area.enabled = false})
-//            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
-//                var obj = image_view.list_overlay_rect[i][0]
-//                obj.mouse_area.enabled= false
-//            }
+            image_view.list_overlay_rect.map((param)=>{param.mouse_area.enabled = false})
         }
+
         //enable over_lap_rect canvas mousearea so that it can catch mouse messages
         function enable_overlap_rect_canvas(){
             if(image_view.list_overlay_rect.length === 0){
                 return
             }
             image_view.list_overlay_rect.map((param)=>{param.mouse_area.enabled = true})
-//            for(var i = 0; i < image_view.list_overlay_rect.length;++i){
-//                var obj = image_view.list_overlay_rect[i][0]
-//                obj.mouse_area.enabled = true
-//            }
         }
 
         //判定鼠标点击位置是否在图像中,在则返回true否则返回false,同时返回对应在图形中的位置
@@ -664,16 +640,6 @@ ApplicationWindow{
         vBar.position = vpos
         vBar.update()
         hBar.update()
-//        //此处用来设置scrollbar的信息
-//        console.log("frame_width: ", image_view.width, 'image_width: ',width)
-//        console.log("frame_height: ", image_view.height, 'image_height: ',height)
-//        hBar.size = image_view.width / width
-//        vBar.size = image_view.height / height
-//        console.log('hBar size: ', hBar.size)
-//        console.log('vBar size: ', vBar.size)
-//        console.log('x: ',offsetX, 'y: ',offsetY)
-//        vBar.position =  y / (height - image_view.height)
-//        hBar.position =  x / (width - image_view.width)
     }
 
     onSigImageViewMouse2PicPos: {
